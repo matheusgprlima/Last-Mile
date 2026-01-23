@@ -1,0 +1,5 @@
+{
+  "name": "HIV/AIDS Evidence Analyzer",
+  "description": "A specialized scientific analysis system for validating and extracting structured data from HIV/AIDS research literature.",
+  "requestFramePermissions": []
+}
