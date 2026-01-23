@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, AlertOctagon, Terminal, ChevronLeft, Map, LifeBuoy, Radio, Search } from 'lucide-react';
+import { Activity, AlertOctagon, ChevronLeft, Map, LifeBuoy, Radio, Search, HelpCircle } from 'lucide-react';
 import LandingPage from './components/LandingPage';
 import AnalysisResultDisplay from './components/AnalysisResultDisplay';
 import DiscoveryFeed from './components/DiscoveryFeed';
 import Assist from './pages/Assist';
 import GetHelp from './pages/GetHelp';
+import WhoThisIsFor from './pages/WhoThisIsFor';
 import { analyzeEvidence } from './services/geminiService';
-import { AnalysisResponse, NewCard } from './types';
+import { AnalysisResponse } from './types';
 import { DEFAULT_MILESTONES } from './data/defaultMilestones';
 
 function App() {
-  const [view, setView] = useState<'landing' | 'app' | 'assist' | 'discoveries' | 'help'>('landing');
+  const [view, setView] = useState<'landing' | 'app' | 'assist' | 'discoveries' | 'help' | 'who-this-is-for'>('landing');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +51,7 @@ function App() {
 
   // View: Landing
   if (view === 'landing') {
-    return <LandingPage onStart={() => setView('app')} />;
+    return <LandingPage onNavigate={(v) => setView(v)} />;
   }
 
   // View: Main App Layout
@@ -66,47 +67,53 @@ function App() {
             </button>
             <div className="flex items-center gap-2">
                <Activity className="w-5 h-5 text-blue-500" />
-               <h1 className="text-sm font-bold text-slate-100 tracking-wide">
-                 LAST MILE <span className="text-slate-600 px-2">|</span> <span className="text-slate-400 font-normal">Evidence Roadmap</span>
+               <h1 className="text-sm font-bold text-slate-100 tracking-wide hidden sm:block">
+                 LAST MILE <span className="text-slate-600 px-2">|</span> <span className="text-slate-400 font-normal">Evidence Hub</span>
+               </h1>
+               <h1 className="text-sm font-bold text-slate-100 tracking-wide sm:hidden">
+                 LAST MILE
                </h1>
             </div>
           </div>
           
           <div className="flex items-center gap-2 sm:gap-6">
-             <nav className="flex items-center gap-1 bg-slate-900/50 p-1 rounded-lg border border-slate-800">
+             <nav className="flex items-center gap-1 bg-slate-900/50 p-1 rounded-lg border border-slate-800 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar">
                <button 
                  onClick={() => setView('app')}
-                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${view === 'app' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 whitespace-nowrap ${view === 'app' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
                >
                  <Map className="w-3 h-3" />
                  Roadmap
                </button>
                <button 
                  onClick={() => setView('discoveries')}
-                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${view === 'discoveries' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 whitespace-nowrap ${view === 'discoveries' ? 'bg-red-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
                >
                  <Radio className="w-3 h-3" />
                  Discoveries
                </button>
                <button 
                  onClick={() => setView('help')}
-                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${view === 'help' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 whitespace-nowrap ${view === 'help' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
                >
                  <Search className="w-3 h-3" />
                  Get Help
                </button>
                <button 
                  onClick={() => setView('assist')}
-                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${view === 'assist' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 whitespace-nowrap ${view === 'assist' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
                >
                  <LifeBuoy className="w-3 h-3" />
                  Agents
                </button>
+               <button 
+                 onClick={() => setView('who-this-is-for')}
+                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 whitespace-nowrap ${view === 'who-this-is-for' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+               >
+                 <HelpCircle className="w-3 h-3" />
+                 Who
+               </button>
              </nav>
-             <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-slate-600 uppercase tracking-widest">
-               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-               Validated Core
-             </div>
           </div>
         </div>
       </header>
@@ -169,6 +176,10 @@ function App() {
 
         {view === 'assist' && (
           <Assist onSelectAgent={(agent) => console.log("Selected agent:", agent.name)} />
+        )}
+
+        {view === 'who-this-is-for' && (
+          <WhoThisIsFor />
         )}
 
       </main>
