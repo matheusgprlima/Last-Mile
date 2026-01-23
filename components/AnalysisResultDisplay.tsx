@@ -15,13 +15,13 @@ import {
   Info,
   ChevronRight,
   ClipboardCheck,
-  Copy,
   TrendingUp,
   Sparkles
 } from 'lucide-react';
 import AnalyzerInput from './AnalyzerInput';
 import { validateEvidenceSource } from '../utils/evidenceLink';
 import { formatStudyPack } from '../utils/studyPack';
+import NotebookLMModal from './NotebookLMModal';
 
 interface AnalysisResultDisplayProps {
   data: AnalysisResponse | null;
@@ -202,217 +202,214 @@ const EvidenceCard: React.FC<{ card: NewCard; onClick: () => void }> = ({ card, 
 /* FullAnalysisModal: On-demand details for a specific milestone */
 const FullAnalysisModal: React.FC<{ card: NewCard; onClose: () => void }> = ({ card, onClose }) => {
   const { light, full } = card;
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyStudyPack = () => {
-    const pack = formatStudyPack(card);
-    navigator.clipboard.writeText(pack).catch(() => {});
-    window.open('https://notebooklm.google.com/', '_blank', 'noopener,noreferrer');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
-  };
+  const [showNotebookModal, setShowNotebookModal] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="relative w-full md:max-w-4xl h-full md:h-auto md:max-h-[92vh] bg-slate-900 border border-slate-800 md:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-        
-        {/* Header */}
-        <div className="p-6 md:p-8 border-b border-slate-800 bg-slate-900/95 backdrop-blur flex items-start justify-between z-10 sticky top-0 md:static">
-           <div className="space-y-3">
-             <div className="flex items-center gap-3">
-                <CategoryBadge category={light.category} />
-                <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">{light.year} MILESTONE</span>
-             </div>
-             <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight pr-8">{light.title}</h2>
-           </div>
-           <button onClick={onClose} className="p-2 -mr-2 -mt-2 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-white transition-colors">
-              <X className="w-6 h-6" />
-           </button>
-        </div>
-
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 bg-slate-900/50">
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="relative w-full md:max-w-4xl h-full md:h-auto md:max-h-[92vh] bg-slate-900 border border-slate-800 md:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
           
-          {/* Canonical Claim Section */}
-          <section>
-             <div className="flex items-center gap-2 mb-3 text-blue-400">
-                <ClipboardCheck className="w-4 h-4" />
-                <h3 className="text-xs font-bold uppercase tracking-widest">Canonical Claim</h3>
-             </div>
-             <p className="text-xl md:text-2xl text-slate-100 font-light leading-relaxed">
-               {full.canonical_claim}
-             </p>
-          </section>
-
-          {/* Why it Matters */}
-          <section className="bg-slate-800/20 border border-slate-800/60 rounded-xl p-6 md:p-8">
-             <div className="flex items-center gap-2 mb-3 text-blue-400">
-                <Info className="w-4 h-4" />
-                <h3 className="text-xs font-bold uppercase tracking-widest">Why it matters today</h3>
-             </div>
-             <p className="text-base text-slate-300 leading-relaxed font-light">
-               {full.why_it_matters_today}
-             </p>
-          </section>
-
-          {/* Grid: Validation & Limitations */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-             
-             {/* What was Validated */}
-             <div>
-                <div className="flex items-center gap-2 mb-4 text-emerald-400">
-                   <CheckCircle2 className="w-4 h-4" />
-                   <h3 className="text-xs font-bold uppercase tracking-widest">What was Validated</h3>
-                </div>
-                <ul className="space-y-3">
-                   {full.what_was_validated.map((item, i) => (
-                     <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-3">
-                       <CheckCircle2 className="w-4 h-4 text-emerald-500/40 mt-0.5 shrink-0" />
-                       {item}
-                     </li>
-                   ))}
-                </ul>
-             </div>
-
-             {/* Limitations */}
-             <div>
-                <div className="flex items-center gap-2 mb-4 text-amber-400">
-                   <AlertTriangle className="w-4 h-4" />
-                   <h3 className="text-xs font-bold uppercase tracking-widest">Limitations & Biases</h3>
-                </div>
-                <ul className="space-y-3">
-                   {full.limitations.map((item, i) => (
-                     <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-3">
-                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500/50 mt-2 shrink-0"></span>
-                       {item}
-                     </li>
-                   ))}
-                </ul>
-             </div>
-          </div>
-
-          {/* Grid: Gaps */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pt-4 border-t border-slate-800/30">
-             
-             {/* Scientific Gaps */}
-             <div>
-                <div className="flex items-center gap-2 mb-4 text-blue-400">
-                   <Beaker className="w-4 h-4" />
-                   <h3 className="text-xs font-bold uppercase tracking-widest">Scientific Gaps</h3>
-                </div>
-                <ul className="space-y-3">
-                   {full.scientific_gaps.map((item, i) => (
-                     <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-3">
-                       <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 mt-2 shrink-0"></span>
-                       {item}
-                     </li>
-                   ))}
-                </ul>
-             </div>
-
-             {/* Implementation Gaps */}
-             <div>
-                <div className="flex items-center gap-2 mb-4 text-indigo-400">
-                   <Activity className="w-4 h-4" />
-                   <h3 className="text-xs font-bold uppercase tracking-widest">Implementation Barriers</h3>
-                </div>
-                <ul className="space-y-3">
-                   {full.implementation_gaps.map((item, i) => (
-                     <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-3">
-                       <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-2 shrink-0"></span>
-                       {item}
-                     </li>
-                   ))}
-                </ul>
-             </div>
-          </div>
-
-          {/* Quantitative Findings */}
-          {full.quantitative_findings.length > 0 && (
-            <section className="pt-4">
-              <div className="flex items-center gap-2 mb-6 text-slate-400">
-                  <TrendingUp className="w-4 h-4" />
-                  <h3 className="text-xs font-bold uppercase tracking-widest">Quantitative Data</h3>
+          {/* Header */}
+          <div className="p-6 md:p-8 border-b border-slate-800 bg-slate-900/95 backdrop-blur flex items-start justify-between z-10 sticky top-0 md:static">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                  <CategoryBadge category={light.category} />
+                  <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">{light.year} MILESTONE</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {full.quantitative_findings.map((f, i) => (
-                  <div key={i} className="p-5 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors">
-                     <div className="text-2xl font-light text-blue-400 mb-1">{f.value}</div>
-                     <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{f.metric}</div>
-                     <p className="text-xs text-slate-500 leading-relaxed italic">{f.context}</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight pr-8">{light.title}</h2>
+            </div>
+            <button onClick={onClose} className="p-2 -mr-2 -mt-2 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-white transition-colors">
+                <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 bg-slate-900/50">
+            
+            {/* Canonical Claim Section */}
+            <section>
+              <div className="flex items-center gap-2 mb-3 text-blue-400">
+                  <ClipboardCheck className="w-4 h-4" />
+                  <h3 className="text-xs font-bold uppercase tracking-widest">Canonical Claim</h3>
+              </div>
+              <p className="text-xl md:text-2xl text-slate-100 font-light leading-relaxed">
+                {full.canonical_claim}
+              </p>
+            </section>
+
+            {/* Why it Matters */}
+            <section className="bg-slate-800/20 border border-slate-800/60 rounded-xl p-6 md:p-8">
+              <div className="flex items-center gap-2 mb-3 text-blue-400">
+                  <Info className="w-4 h-4" />
+                  <h3 className="text-xs font-bold uppercase tracking-widest">Why it matters today</h3>
+              </div>
+              <p className="text-base text-slate-300 leading-relaxed font-light">
+                {full.why_it_matters_today}
+              </p>
+            </section>
+
+            {/* Grid: Validation & Limitations */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+              
+              {/* What was Validated */}
+              <div>
+                  <div className="flex items-center gap-2 mb-4 text-emerald-400">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest">What was Validated</h3>
+                  </div>
+                  <ul className="space-y-3">
+                    {full.what_was_validated.map((item, i) => (
+                      <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-3">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500/40 mt-0.5 shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+              </div>
+
+              {/* Limitations */}
+              <div>
+                  <div className="flex items-center gap-2 mb-4 text-amber-400">
+                    <AlertTriangle className="w-4 h-4" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest">Limitations & Biases</h3>
+                  </div>
+                  <ul className="space-y-3">
+                    {full.limitations.map((item, i) => (
+                      <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500/50 mt-2 shrink-0"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+              </div>
+            </div>
+
+            {/* Grid: Gaps */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 pt-4 border-t border-slate-800/30">
+              
+              {/* Scientific Gaps */}
+              <div>
+                  <div className="flex items-center gap-2 mb-4 text-blue-400">
+                    <Beaker className="w-4 h-4" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest">Scientific Gaps</h3>
+                  </div>
+                  <ul className="space-y-3">
+                    {full.scientific_gaps.map((item, i) => (
+                      <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50 mt-2 shrink-0"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+              </div>
+
+              {/* Implementation Gaps */}
+              <div>
+                  <div className="flex items-center gap-2 mb-4 text-indigo-400">
+                    <Activity className="w-4 h-4" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest">Implementation Barriers</h3>
+                  </div>
+                  <ul className="space-y-3">
+                    {full.implementation_gaps.map((item, i) => (
+                      <li key={i} className="text-sm text-slate-300 leading-relaxed flex items-start gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500/50 mt-2 shrink-0"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+              </div>
+            </div>
+
+            {/* Quantitative Findings */}
+            {full.quantitative_findings.length > 0 && (
+              <section className="pt-4">
+                <div className="flex items-center gap-2 mb-6 text-slate-400">
+                    <TrendingUp className="w-4 h-4" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest">Quantitative Data</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {full.quantitative_findings.map((f, i) => (
+                    <div key={i} className="p-5 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors">
+                      <div className="text-2xl font-light text-blue-400 mb-1">{f.value}</div>
+                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{f.metric}</div>
+                      <p className="text-xs text-slate-500 leading-relaxed italic">{f.context}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Sources */}
+            <section className="pt-8 border-t border-slate-800">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                <div className="flex items-center gap-2 text-slate-500">
+                    <BookOpen className="w-4 h-4" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest">Evidence Sources</h3>
+                </div>
+                <button 
+                    onClick={() => setShowNotebookModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 hover:from-blue-800/40 hover:to-indigo-800/40 text-blue-200 hover:text-white rounded-lg border border-blue-500/20 hover:border-blue-400/40 transition-all text-xs font-semibold shadow-sm"
+                >
+                    <Sparkles className="w-4 h-4 text-blue-400" />
+                    Study in NotebookLM
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {full.sources.primary.map((src, i) => {
+                  const validation = validateEvidenceSource(src);
+                  return (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-900/30 hover:bg-slate-900/50 border border-slate-800/40 transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700">
+                            {src.type}
+                          </span>
+                          <span className="text-sm text-slate-300 font-medium font-mono group-hover:text-blue-300 transition-colors">
+                            {src.citation || src.id}
+                          </span>
+                        </div>
+                        {validation.ok && (
+                          <a href={validation.resolvedUrl} target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-blue-400 transition-colors p-1">
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                    </div>
+                  );
+                })}
+                {full.sources.secondary.map((src, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-transparent opacity-60 hover:opacity-100 transition-opacity">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-slate-500 border border-slate-800">
+                        {src.publisher}
+                      </span>
+                      <span className="text-xs text-slate-500 italic">
+                        {src.title} ({src.year})
+                      </span>
                   </div>
                 ))}
               </div>
             </section>
-          )}
 
-          {/* Sources */}
-          <section className="pt-8 border-t border-slate-800">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-               <div className="flex items-center gap-2 text-slate-500">
-                  <BookOpen className="w-4 h-4" />
-                  <h3 className="text-xs font-bold uppercase tracking-widest">Evidence Sources</h3>
-               </div>
-               <button 
-                  onClick={handleCopyStudyPack}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 hover:from-blue-800/40 hover:to-indigo-800/40 text-blue-200 hover:text-white rounded-lg border border-blue-500/20 hover:border-blue-400/40 transition-all text-xs font-semibold shadow-sm"
-               >
-                  {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Sparkles className="w-4 h-4 text-blue-400" />}
-                  {copied ? 'Copied to Clipboard' : 'Study in NotebookLM'}
-               </button>
-            </div>
+          </div>
 
-            <div className="space-y-2">
-               {full.sources.primary.map((src, i) => {
-                 const validation = validateEvidenceSource(src);
-                 return (
-                   <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-900/30 hover:bg-slate-900/50 border border-slate-800/40 transition-colors group">
-                      <div className="flex items-center gap-3">
-                         <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700">
-                           {src.type}
-                         </span>
-                         <span className="text-sm text-slate-300 font-medium font-mono group-hover:text-blue-300 transition-colors">
-                           {src.citation || src.id}
-                         </span>
-                      </div>
-                      {validation.ok && (
-                        <a href={validation.resolvedUrl} target="_blank" rel="noopener noreferrer" className="text-slate-600 hover:text-blue-400 transition-colors p-1">
-                           <ExternalLink className="w-4 h-4" />
-                        </a>
-                      )}
-                   </div>
-                 );
-               })}
-               {full.sources.secondary.map((src, i) => (
-                 <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-transparent opacity-60 hover:opacity-100 transition-opacity">
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-slate-500 border border-slate-800">
-                      {src.publisher}
-                    </span>
-                    <span className="text-xs text-slate-500 italic">
-                      {src.title} ({src.year})
-                    </span>
-                 </div>
-               ))}
-            </div>
-          </section>
-
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900 text-center z-10">
-           <p className="text-[10px] text-slate-600 font-mono uppercase tracking-[0.2em]">
-             LAST MILE // VALIDATED CORE RECORD // {light.id}
-           </p>
+          {/* Footer */}
+          <div className="p-4 border-t border-slate-800 bg-slate-900 text-center z-10">
+            <p className="text-[10px] text-slate-600 font-mono uppercase tracking-[0.2em]">
+              LAST MILE // VALIDATED CORE RECORD // {light.id}
+            </p>
+          </div>
         </div>
       </div>
-      
-      {/* Toast Feedback (Optional visual enhancement if not using standard toast lib) */}
-      {copied && (
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 px-4 py-2 rounded-full text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-top-2 z-[60]">
-           Study Pack Copied — Paste in NotebookLM
-        </div>
+
+      {/* Notebook Modal */}
+      {showNotebookModal && (
+        <NotebookLMModal 
+          isOpen={showNotebookModal}
+          onClose={() => setShowNotebookModal(false)}
+          seedText={formatStudyPack(card)}
+          title={light.title}
+        />
       )}
-    </div>
+    </>
   );
 };
 
