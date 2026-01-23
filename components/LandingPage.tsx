@@ -42,15 +42,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             </button>
             <button 
               onClick={() => onNavigate('help')}
-              className="px-8 py-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 hover:border-slate-600 transition-all flex items-center gap-2"
+              className="group px-8 py-4 rounded-lg bg-slate-900/40 hover:bg-emerald-950/20 text-slate-200 hover:text-emerald-200 font-semibold text-sm border border-slate-700 hover:border-emerald-500/30 transition-all flex items-center gap-2 backdrop-blur-sm"
+              title="Access testing, treatment, and support resources"
             >
-              Get Help (by location)
+              <ShieldCheck className="w-4 h-4 text-emerald-500/70 group-hover:text-emerald-400 transition-colors" />
+              Find Help Near You
             </button>
             <button 
               onClick={() => onNavigate('who-this-is-for')}
-              className="px-6 py-4 text-sm text-slate-400 hover:text-slate-200 font-medium transition-colors"
+              className="px-5 py-4 text-sm text-slate-500 hover:text-slate-300 font-medium transition-colors hover:underline underline-offset-4 decoration-slate-800/50"
             >
-              Who this is for
+              Is this for me?
             </button>
           </div>
         </div>
