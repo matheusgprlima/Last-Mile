@@ -16,7 +16,8 @@ import {
   ChevronRight,
   ClipboardCheck,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import AnalyzerInput from './AnalyzerInput';
 import { validateEvidenceSource } from '../utils/evidenceLink';
@@ -75,8 +76,11 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({ data, onA
           />
         ))}
 
+        {/* LOADING STATE CARD */}
+        {isAnalyzing && <LoadingCard />}
+
         {/* FRONTIER CARD (Control / Input Trigger) */}
-        {!showInput && (
+        {!showInput && !isAnalyzing && (
           <div className="group relative min-h-[320px] rounded-xl border-2 border-dashed border-slate-800 bg-slate-900/20 hover:bg-slate-900/40 hover:border-blue-500/30 transition-all cursor-pointer flex flex-col items-center justify-center text-center p-8"
                onClick={() => setShowInput(true)}>
              <div className="w-12 h-12 rounded-full bg-slate-800 group-hover:bg-blue-900/30 flex items-center justify-center mb-4 transition-colors">
@@ -127,6 +131,33 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({ data, onA
 };
 
 // --- SUB-COMPONENTS ---
+
+/* LoadingCard: Placeholder during analysis */
+const LoadingCard: React.FC = () => (
+  <div className="glass-card rounded-xl p-6 flex flex-col h-full border border-blue-500/30 shadow-lg shadow-blue-900/10 relative overflow-hidden animate-in fade-in duration-300">
+    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 animate-pulse" />
+    
+    <div className="flex items-start justify-between mb-5 animate-pulse">
+      <div className="flex flex-col gap-2.5">
+         <div className="h-5 w-24 bg-slate-800 rounded"></div>
+         <div className="h-3 w-16 bg-slate-800 rounded ml-0.5"></div>
+      </div>
+      <div className="h-5 w-20 bg-slate-800 rounded"></div>
+    </div>
+
+    <div className="h-6 w-3/4 bg-slate-800 rounded mb-3 animate-pulse"></div>
+    <div className="space-y-2 mb-6 animate-pulse">
+      <div className="h-3 w-full bg-slate-800 rounded"></div>
+      <div className="h-3 w-5/6 bg-slate-800 rounded"></div>
+      <div className="h-3 w-4/6 bg-slate-800 rounded"></div>
+    </div>
+
+    <div className="mt-auto pt-4 border-t border-slate-800/50 flex items-center justify-center gap-2 text-blue-400">
+       <Loader2 className="w-4 h-4 animate-spin" />
+       <span className="text-xs font-mono uppercase tracking-widest">Validating Evidence...</span>
+    </div>
+  </div>
+);
 
 /* CategoryBadge: Color-coded label for research categories */
 const CategoryBadge: React.FC<{ category: Category }> = ({ category }) => {

@@ -33,15 +33,29 @@ function App() {
 
     try {
       const data = await analyzeEvidence(text);
-      if (data.rejected) {
-          setResult(data);
-      } else {
-          setResult(prev => ({
-              rejected: false,
-              matches_existing: data.matches_existing,
-              new_cards: [...(prev?.new_cards || []), ...(data.new_cards || [])]
-          }));
-      }
+      
+      setResult(prev => {
+        // Always preserve existing cards (or fallback to defaults)
+        const currentCards = prev?.new_cards || DEFAULT_MILESTONES;
+
+        if (data.rejected) {
+            // If rejected, update status but keep existing data
+            return {
+                rejected: true,
+                reason: data.reason,
+                matches_existing: prev?.matches_existing || [],
+                new_cards: currentCards
+            };
+        } else {
+            // If successful, append new cards to existing ones
+            return {
+                rejected: false,
+                matches_existing: data.matches_existing,
+                new_cards: [...currentCards, ...(data.new_cards || [])]
+            };
+        }
+      });
+
     } catch (err) {
       setError("Unable to process evidence. Please try again.");
     } finally {
