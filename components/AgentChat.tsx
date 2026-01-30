@@ -72,27 +72,27 @@ const AgentChat: React.FC<AgentChatProps> = ({ agent, onBack }) => {
     Explain test types briefly.
     Clarify testing window if relevant.
     Guide to next concrete step.
-    Always end with a clear, single next step phrased conversationally.` : ''}
+    End with: NEXT ACTION: Find a testing site or choose a test type` : ''}
 
     ${agent.id === 'treatment' ? `
     Access (Treatment Specialist):
     Explain treatment access paths.
     Reduce fear around eligibility.
     Provide one clear next step.
-    Always end with a clear, single next step phrased conversationally.` : ''}
+    End with: NEXT ACTION: Start treatment pathway` : ''}
 
     ${agent.id === 'prevention' ? `
     Shield (PrEP / PEP Guide):
     If exposure is ≤72h, prioritize PEP (Post-Exposure Prophylaxis).
     Else, focus on PrEP (Pre-Exposure Prophylaxis) evaluation.
-    Always end with a clear, single next step phrased conversationally.` : ''}
+    End with: NEXT ACTION: Seek PEP now OR Start PrEP evaluation` : ''}
 
     ${agent.id === 'navigation' ? `
     Compass (System Navigator):
     Translate system/process into plain language.
     Give step-by-step guidance.
     Never give more than ONE step at a time.
-    Always end with a clear, single next step phrased conversationally.` : ''}
+    End with: NEXT ACTION: Complete step 1` : ''}
     `;
     return base;
   };
