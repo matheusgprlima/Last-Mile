@@ -48,7 +48,7 @@ const DiscoveryFeed: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch('/api/discoveries/feed');
+      const res = await fetch('/api/discoveries/feed?refresh=1');
       const data = await res.json();
       if (data.success && Array.isArray(data.discoveries) && data.discoveries.length > 0) {
         const seenIds = getSeenIds();
@@ -60,7 +60,6 @@ const DiscoveryFeed: React.FC = () => {
         markIdsAsSeen(selected.map((s: DiscoveryCard) => s.id));
         setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       } else {
-        // Fallback to seed when API fails or returns no discoveries (scientific feed may be empty)
         const seenIds = getSeenIds();
         const unseen = SEED_DISCOVERIES.filter(d => !seenIds.includes(d.id));
         const pool = unseen.length >= 4 ? unseen : SEED_DISCOVERIES;
@@ -70,6 +69,8 @@ const DiscoveryFeed: React.FC = () => {
         markIdsAsSeen(selected.map(s => s.id));
         setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         if (!res.ok) setError('Could not load live feed. Showing curated discoveries.');
+        else if (data.discoveries?.length === 0)
+          setError('Nenhuma descoberta nova nesta atualização. Exibindo destaques curados.');
         else setError(null);
       }
     } catch {

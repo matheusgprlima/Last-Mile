@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { DiscoveryCard } from '../../types.js';
 import { formatNewsItem } from './geminiDiscovery.js';
+import { log } from '../utils/logger.js';
 
 const CACHE_PATH =
   typeof process !== 'undefined' && process.env.VERCEL
@@ -130,7 +131,7 @@ export async function writeCache(entry: CacheEntry): Promise<void> {
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(CACHE_PATH, JSON.stringify(entry, null, 2), 'utf-8');
   } catch (err) {
-    console.warn('[discoveryMonitor] Could not write cache:', err instanceof Error ? err.message : String(err));
+    log.warn('discoveryMonitor', 'Could not write cache', { reason: err instanceof Error ? err.message : String(err) });
   }
 }
 
@@ -150,9 +151,11 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
     if (!forceRefresh) {
       const cached = await readCache();
       if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+        log.info('discoveryMonitor', 'Cache hit', { count: cached.discoveries.length });
         return cached.discoveries;
       }
     }
+    log.info('discoveryMonitor', 'Fetching from RSS', { forceRefresh });
 
     const parser = new Parser({
       timeout: 15000,
@@ -170,14 +173,19 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
           allItems.push({ item, sourceName: source.name, index: index++ });
         }
       } catch (err) {
-        console.warn('[discoveryMonitor]', rssErrorShort(source.name, err));
+        const short = rssErrorShort(source.name, err);
+        log.warn('discoveryMonitor', `RSS failed: ${short}`);
       }
     }
+
+    log.info('discoveryMonitor', 'RSS fetch done', { itemsFromRss: allItems.length, sources: RSS_SOURCES.length });
 
   const seenTitles = new Set<string>();
   const discoveries: DiscoveryCard[] = [];
   const useGemini = Boolean(process.env.GEMINI_API_KEY?.trim());
   const maxWithGemini = 10;
+
+  if (useGemini) log.info('discoveryMonitor', 'Using Gemini to validate items');
 
   const notDiscoveryPhrases = [
     'lose access',
@@ -247,12 +255,19 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
     );
   }
 
+    log.info('discoveryMonitor', 'Fetch complete', {
+      discoveries: discoveries.length,
+      fromCache: false,
+      useGemini,
+    });
     const entry: CacheEntry = { timestamp: Date.now(), discoveries };
     await writeCache(entry);
     return discoveries;
   } catch (err) {
-    console.warn('[discoveryMonitor] Fetch failed:', err instanceof Error ? err.message : String(err));
+    log.warn('discoveryMonitor', 'Fetch failed', { reason: err instanceof Error ? err.message : String(err) });
     const cached = await readCache();
-    return cached?.discoveries ?? [];
+    const fallback = cached?.discoveries ?? [];
+    if (fallback.length) log.info('discoveryMonitor', 'Returning cached fallback', { count: fallback.length });
+    return fallback;
   }
 }
