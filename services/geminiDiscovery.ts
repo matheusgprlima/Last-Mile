@@ -3,8 +3,8 @@
  * Used by discoveryMonitor (API / server). Prefer fast processing.
  */
 import { GoogleGenAI } from '@google/genai';
-import { DISCOVERY_FORMAT_INSTRUCTION } from '../constants';
-import type { DiscoveryCard, DiscoveryResponse } from '../types';
+import { DISCOVERY_FORMAT_INSTRUCTION } from '../constants.js';
+import type { DiscoveryCard, DiscoveryResponse } from '../types.js';
 import { createLogger } from '../api/utils/logger.js';
 
 const log = createLogger('geminiDiscovery');
