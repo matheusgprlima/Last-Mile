@@ -17,7 +17,7 @@ export default async function handler(
 
   try {
     const { fetchLatestDiscoveries } = await import(
-      '../../services/discoveryMonitor'
+      '../../services/discoveryMonitor.js'
     ).catch((e: unknown) => {
       log.warn('Module load failed', { reason: (e as Error)?.message ?? String(e) });
       return { fetchLatestDiscoveries: async () => [] as never[] };
