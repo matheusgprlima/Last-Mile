@@ -1,7 +1,7 @@
 import Parser from 'rss-parser';
 import fs from 'fs/promises';
 import path from 'path';
-import type { DiscoveryCard } from '../types';
+import type { DiscoveryCard } from '../types.js';
 import { formatNewsItem } from './geminiDiscovery.js';
 import { createLogger } from '../api/utils/logger.js';
 

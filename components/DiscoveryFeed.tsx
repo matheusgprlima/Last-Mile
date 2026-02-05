@@ -70,7 +70,7 @@ const DiscoveryFeed: React.FC = () => {
         setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         if (!res.ok) setError('Could not load live feed. Showing curated discoveries.');
         else if (data.discoveries?.length === 0)
-          setError('Nenhuma descoberta nova nesta atualização. Exibindo destaques curados.');
+          setError('No new discoveries in this update. Showing curated highlights.');
         else setError(null);
       }
     } catch {
