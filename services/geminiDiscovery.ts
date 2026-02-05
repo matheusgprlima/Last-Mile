@@ -5,7 +5,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { DISCOVERY_FORMAT_INSTRUCTION } from '../constants';
 import type { DiscoveryCard, DiscoveryResponse } from '../types';
-import { createLogger } from '../api/utils/logger';
+import { createLogger } from '../api/utils/logger.js';
 
 const log = createLogger('geminiDiscovery');
 

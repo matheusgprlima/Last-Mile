@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { DiscoveryCard } from '../types';
 import { formatNewsItem } from './geminiDiscovery.js';
-import { createLogger } from '../api/utils/logger';
+import { createLogger } from '../api/utils/logger.js';
 
 const log = createLogger('discoveryMonitor');
 
