@@ -1,11 +1,11 @@
 /**
- * Minimal Express backend: cron every hour to refresh HIV discovery feed from RSS,
- * exposes GET /api/discoveries/feed for the frontend.
+ * Local API server for discovery feed (GET/POST /api/discoveries/feed, POST /api/discoveries/refresh).
+ * In production, Vercel uses api/discoveries/* serverless functions instead.
  */
 import express from 'express';
 import cors from 'cors';
 import cron from 'node-cron';
-import { fetchLatestDiscoveries } from './services/discoveryMonitor.js';
+import { fetchLatestDiscoveries } from './services/discoveryMonitor';
 
 const PORT = Number(process.env.PORT) || 3001;
 const app = express();

@@ -1,11 +1,11 @@
 /**
- * Server-side Gemini: formats a raw news item into a DiscoveryCard with source_labels (alias).
- * Prefer fast processing: single card, concise output, no commentary.
+ * Gemini: formats a raw news item into a DiscoveryCard with source_labels (alias).
+ * Used by discoveryMonitor (API / server). Prefer fast processing.
  */
 import { GoogleGenAI } from '@google/genai';
-import { DISCOVERY_FORMAT_INSTRUCTION } from '../../constants';
-import type { DiscoveryCard, DiscoveryResponse } from '../../types';
-import { log } from '../utils/logger.js';
+import { DISCOVERY_FORMAT_INSTRUCTION } from '../constants';
+import type { DiscoveryCard, DiscoveryResponse } from '../types';
+import { log } from '../utils/logger';
 
 const apiKey = process.env.GEMINI_API_KEY;
 

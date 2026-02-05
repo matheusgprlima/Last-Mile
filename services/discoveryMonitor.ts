@@ -1,9 +1,9 @@
 import Parser from 'rss-parser';
 import fs from 'fs/promises';
 import path from 'path';
-import type { DiscoveryCard } from '../../types.js';
-import { formatNewsItem } from './geminiDiscovery.js';
-import { log } from '../utils/logger.js';
+import type { DiscoveryCard } from '../types';
+import { formatNewsItem } from './geminiDiscovery';
+import { log } from '../utils/logger';
 
 const CACHE_PATH =
   typeof process !== 'undefined' && process.env.VERCEL

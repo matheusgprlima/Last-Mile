@@ -1,4 +1,4 @@
-import { log } from '../../server/utils/logger';
+import { log } from '../../utils/logger';
 
 export default async function handler(
   _req: { method?: string },
@@ -15,7 +15,7 @@ export default async function handler(
 
   try {
     const { fetchLatestDiscoveries } = await import(
-      '../../server/services/discoveryMonitor'
+      '../../services/discoveryMonitor'
     ).catch((e: unknown) => {
       log.warn('api/refresh', 'Module load failed', { reason: (e as Error)?.message ?? String(e) });
       return { fetchLatestDiscoveries: async () => [] as never[] };
