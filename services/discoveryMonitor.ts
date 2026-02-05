@@ -2,8 +2,10 @@ import Parser from 'rss-parser';
 import fs from 'fs/promises';
 import path from 'path';
 import type { DiscoveryCard } from '../types';
-import { formatNewsItem } from './geminiDiscovery';
-import { log } from '../utils/logger';
+import { formatNewsItem } from './geminiDiscovery.js';
+import { createLogger } from '../api/utils/logger';
+
+const log = createLogger('discoveryMonitor');
 
 const CACHE_PATH =
   typeof process !== 'undefined' && process.env.VERCEL
@@ -131,7 +133,7 @@ export async function writeCache(entry: CacheEntry): Promise<void> {
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(CACHE_PATH, JSON.stringify(entry, null, 2), 'utf-8');
   } catch (err) {
-    log.warn('discoveryMonitor', 'Could not write cache', { reason: err instanceof Error ? err.message : String(err) });
+    log.warn('Could not write cache', { reason: err instanceof Error ? err.message : String(err) });
   }
 }
 
@@ -151,11 +153,11 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
     if (!forceRefresh) {
       const cached = await readCache();
       if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-        log.info('discoveryMonitor', 'Cache hit', { count: cached.discoveries.length });
+        log.info('Cache hit', { count: cached.discoveries.length });
         return cached.discoveries;
       }
     }
-    log.info('discoveryMonitor', 'Fetching from RSS', { forceRefresh });
+    log.info('Fetching from RSS', { forceRefresh });
 
     const parser = new Parser({
       timeout: 15000,
@@ -174,18 +176,18 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
         }
       } catch (err) {
         const short = rssErrorShort(source.name, err);
-        log.warn('discoveryMonitor', `RSS failed: ${short}`);
+        log.warn(`RSS failed: ${short}`);
       }
     }
 
-    log.info('discoveryMonitor', 'RSS fetch done', { itemsFromRss: allItems.length, sources: RSS_SOURCES.length });
+    log.info('RSS fetch done', { itemsFromRss: allItems.length, sources: RSS_SOURCES.length });
 
   const seenTitles = new Set<string>();
   const discoveries: DiscoveryCard[] = [];
   const useGemini = Boolean(process.env.GEMINI_API_KEY?.trim());
   const maxWithGemini = 10;
 
-  if (useGemini) log.info('discoveryMonitor', 'Using Gemini to validate items');
+  if (useGemini) log.info('Using Gemini to validate items');
 
   const notDiscoveryPhrases = [
     'lose access',
@@ -255,7 +257,7 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
     );
   }
 
-    log.info('discoveryMonitor', 'Fetch complete', {
+    log.info('Fetch complete', {
       discoveries: discoveries.length,
       fromCache: false,
       useGemini,
@@ -264,10 +266,10 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
     await writeCache(entry);
     return discoveries;
   } catch (err) {
-    log.warn('discoveryMonitor', 'Fetch failed', { reason: err instanceof Error ? err.message : String(err) });
+    log.warn('Fetch failed', { reason: err instanceof Error ? err.message : String(err) });
     const cached = await readCache();
     const fallback = cached?.discoveries ?? [];
-    if (fallback.length) log.info('discoveryMonitor', 'Returning cached fallback', { count: fallback.length });
+    if (fallback.length) log.info('Returning cached fallback', { count: fallback.length });
     return fallback;
   }
 }

@@ -5,7 +5,9 @@
 import { GoogleGenAI } from '@google/genai';
 import { DISCOVERY_FORMAT_INSTRUCTION } from '../constants';
 import type { DiscoveryCard, DiscoveryResponse } from '../types';
-import { log } from '../utils/logger';
+import { createLogger } from '../api/utils/logger';
+
+const log = createLogger('geminiDiscovery');
 
 const apiKey = process.env.GEMINI_API_KEY;
 
@@ -50,19 +52,19 @@ export async function formatNewsItem(raw: {
 
     const parsed = JSON.parse(text) as DiscoveryResponse;
     if (parsed.rejected_items?.length && !parsed.discovery_cards?.length) {
-      log.info('geminiDiscovery', 'Item rejected', { reason: parsed.rejected_items[0]?.reason ?? 'unknown' });
+      log.info('Item rejected', { reason: parsed.rejected_items[0]?.reason ?? 'unknown' });
       return null;
     }
     const card = parsed.discovery_cards?.[0] ?? null;
     if (!card) return null;
-    log.info('geminiDiscovery', 'Card accepted', { title: card.title?.slice(0, 50) });
+    log.info('Card accepted', { title: card.title?.slice(0, 50) });
 
     if (card.sources?.length && (!card.source_labels || card.source_labels.length !== card.sources.length)) {
       card.source_labels = card.sources.map(() => raw.sourceName);
     }
     return card;
   } catch (err) {
-    log.warn('geminiDiscovery', 'formatNewsItem failed', { reason: err instanceof Error ? err.message : String(err) });
+    log.warn('formatNewsItem failed', { reason: err instanceof Error ? err.message : String(err) });
     return null;
   }
 }
