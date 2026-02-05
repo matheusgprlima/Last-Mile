@@ -4,9 +4,6 @@ import { AnalysisResponse, DiscoveryResponse } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-console.log('API_KEY', process.env.API_KEY);
-console.log('GEMINI_API_KEY', process.env.GEMINI_API_KEY);
-
 export const analyzeEvidence = async (text: string): Promise<AnalysisResponse> => {
   try {
     // We strictly follow the prompt requirement to provide a baseline_history_index.
