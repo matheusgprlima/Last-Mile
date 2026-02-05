@@ -27,6 +27,7 @@ const DiscoveryFeed: React.FC = () => {
   const [activeFeed, setActiveFeed] = useState<DiscoveryCard[]>([]);
   const [lastUpdate, setLastUpdate] = useState<string>('Just now');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Load seen IDs from storage
   const getSeenIds = (): string[] => {
@@ -43,26 +44,52 @@ const DiscoveryFeed: React.FC = () => {
     localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(updated));
   };
 
-  const refreshFeed = () => {
+  const refreshFeed = async () => {
     setError(null);
-    const seenIds = getSeenIds();
-    
-    // Prioritize unseen items, then shuffle the rest
-    const unseen = SEED_DISCOVERIES.filter(d => !seenIds.includes(d.id));
-    const pool = unseen.length >= 4 ? unseen : SEED_DISCOVERIES;
-    
-    // Pick 4 random items
-    const shuffled = [...pool].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 4);
-    
-    setActiveFeed(selected);
-    markIdsAsSeen(selected.map(s => s.id));
-    setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    setLoading(true);
+    try {
+      const res = await fetch('/api/discoveries/feed');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.discoveries) && data.discoveries.length > 0) {
+        const seenIds = getSeenIds();
+        const unseen = data.discoveries.filter((d: DiscoveryCard) => !seenIds.includes(d.id));
+        const pool = unseen.length >= 4 ? unseen : data.discoveries;
+        const shuffled = [...pool].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 8);
+        setActiveFeed(selected);
+        markIdsAsSeen(selected.map((s: DiscoveryCard) => s.id));
+        setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      } else {
+        // Fallback to seed when API fails or returns no discoveries (scientific feed may be empty)
+        const seenIds = getSeenIds();
+        const unseen = SEED_DISCOVERIES.filter(d => !seenIds.includes(d.id));
+        const pool = unseen.length >= 4 ? unseen : SEED_DISCOVERIES;
+        const shuffled = [...pool].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 8);
+        setActiveFeed(selected);
+        markIdsAsSeen(selected.map(s => s.id));
+        setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        if (!res.ok) setError('Could not load live feed. Showing curated discoveries.');
+        else setError(null);
+      }
+    } catch {
+      const seenIds = getSeenIds();
+      const unseen = SEED_DISCOVERIES.filter(d => !seenIds.includes(d.id));
+      const pool = unseen.length >= 4 ? unseen : SEED_DISCOVERIES;
+      const shuffled = [...pool].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 4);
+      setActiveFeed(selected);
+      markIdsAsSeen(selected.map(s => s.id));
+      setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      setError('Network error. Showing cached discoveries.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Initial load
+  // Initial load: try API first, then seed
   useEffect(() => {
-    refreshFeed();
+    void refreshFeed();
   }, []);
 
   const handleAnalyze = async (text: string) => {
@@ -113,7 +140,7 @@ const DiscoveryFeed: React.FC = () => {
            </div>
            <h1 className="text-3xl font-bold text-white mb-2">Global Discoveries</h1>
            <p className="text-slate-400 text-sm max-w-xl">
-             Real-time tracking of HIV/AIDS advancements in public health, policy, and clinical research.
+             Advances only: new treatments, trials, policy progress, and research toward a cure — not general news.
            </p>
         </div>
         
@@ -123,12 +150,13 @@ const DiscoveryFeed: React.FC = () => {
             UPDATED {lastUpdate.toUpperCase()}
           </div>
           <button 
-            onClick={refreshFeed}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition-colors text-xs font-semibold uppercase tracking-wide group"
-            title="Refresh feed with latest research"
+            onClick={() => void refreshFeed()}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition-colors text-xs font-semibold uppercase tracking-wide group disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Refresh feed with latest HIV/AIDS news"
           >
-            <RefreshCw className="w-4 h-4 group-active:rotate-180 transition-transform duration-500" />
-            Refresh
+            <RefreshCw className={`w-4 h-4 group-active:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Loading…' : 'Refresh'}
           </button>
           <button 
             onClick={() => setShowInput(true)}
@@ -218,6 +246,7 @@ const DiscoveryFeed: React.FC = () => {
               <div className="mt-6 flex flex-wrap gap-2">
                 {card.sources.map((src, i) => {
                    const validation = validateEvidenceSource(src);
+                   const label = card.source_labels?.[i] ?? (src.startsWith('http') ? 'Read more' : src);
                    return (
                      <button 
                        key={i} 
@@ -230,7 +259,7 @@ const DiscoveryFeed: React.FC = () => {
                        }`}
                      >
                        <ExternalLink className={`w-3 h-3 ${validation.ok ? 'text-blue-400' : 'text-slate-700'}`} />
-                       {src}
+                       {label}
                      </button>
                    );
                 })}

@@ -83,8 +83,6 @@ export interface AnalysisResponse {
   merge_plan?: MergePlan;
 }
 
-// --- DISCOVERY MONITOR TYPES ---
-
 export interface DiscoveryCard {
   id: string;
   title: string;
@@ -94,6 +92,7 @@ export interface DiscoveryCard {
   why_this_matters: string;
   date_announced: string;
   sources: string[];
+  source_labels?: string[];
   confidence_basis: string;
 }
 
