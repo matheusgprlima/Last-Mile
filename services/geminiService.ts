@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import { SYSTEM_INSTRUCTION, DISCOVERY_SYSTEM_INSTRUCTION } from "../prompts";
-import { AnalysisResponse, DiscoveryResponse } from "../types";
+import { SYSTEM_INSTRUCTION, DISCOVERY_SYSTEM_INSTRUCTION } from "../prompts.js";
+import type { AnalysisResponse, DiscoveryResponse } from "../types.js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
