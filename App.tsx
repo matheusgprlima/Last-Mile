@@ -6,10 +6,10 @@ import DiscoveryFeed from './components/DiscoveryFeed';
 import Assist from './pages/Assist';
 import GetHelp from './pages/GetHelp';
 import WhoThisIsFor from './pages/WhoThisIsFor';
-import { analyzeEvidence } from './services/geminiService';
 import { AnalysisResponse } from './types';
 import { DEFAULT_MILESTONES } from './data/defaultMilestones';
 import { prefetchDiscoveries } from './utils/discoveryFeedCache';
+import { getCachedAnalysis, setCachedAnalysis } from './utils/analysisCache';
 
 function App() {
   const [view, setView] = useState<'landing' | 'app' | 'assist' | 'discoveries' | 'help' | 'who-this-is-for'>('landing');
@@ -40,7 +40,23 @@ function App() {
     setError(null);
 
     try {
-      const data = await analyzeEvidence(text);
+      const cached = getCachedAnalysis(text);
+      let data: AnalysisResponse;
+      if (cached) {
+        data = cached;
+      } else {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err as { error?: string }).error || 'Analysis failed');
+        }
+        data = (await res.json()) as AnalysisResponse;
+        setCachedAnalysis(text, data);
+      }
       
       setResult(prev => {
         // Always preserve existing cards (or fallback to defaults)

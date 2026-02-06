@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { SYSTEM_INSTRUCTION, DISCOVERY_SYSTEM_INSTRUCTION } from "../constants";
 import { AnalysisResponse, DiscoveryResponse } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 export const analyzeEvidence = async (text: string): Promise<AnalysisResponse> => {
   try {

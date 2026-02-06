@@ -1,17 +1,48 @@
 /**
- * Local API server for discovery feed (GET/POST /api/discoveries/feed, POST /api/discoveries/refresh).
- * In production, Vercel uses api/discoveries/* serverless functions instead.
+ * Local API server for discovery feed and evidence analyze.
+ * In production, Vercel uses api/* serverless functions instead.
  */
 import express from 'express';
 import cors from 'cors';
 import cron from 'node-cron';
 import { fetchLatestDiscoveries } from './services/discoveryMonitor';
+import { analyzeEvidence } from './services/geminiService';
+import { hashText } from './utils/analysisCache';
+import type { AnalysisResponse } from './types';
 
 const PORT = Number(process.env.PORT) || 3001;
 const app = express();
+const analyzeCache = new Map<string, AnalysisResponse>();
+const ANALYZE_CACHE_MAX = 100;
 
 app.use(cors({ origin: true }));
 app.use(express.json());
+
+app.post('/api/analyze', async (req, res) => {
+  try {
+    const text = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
+    if (!text) {
+      res.status(400).json({ error: 'Missing or invalid body: { text: string }' });
+      return;
+    }
+    const key = hashText(text);
+    const cached = analyzeCache.get(key);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+    const data = await analyzeEvidence(text);
+    if (analyzeCache.size >= ANALYZE_CACHE_MAX) {
+      const first = analyzeCache.keys().next().value;
+      if (first != null) analyzeCache.delete(first);
+    }
+    analyzeCache.set(key, data);
+    res.json(data);
+  } catch (err) {
+    console.error('[POST /api/analyze]', err);
+    res.status(500).json({ error: 'Analysis failed. Please try again.' });
+  }
+});
 
 app.get('/api/discoveries/feed', async (_req, res) => {
   try {
