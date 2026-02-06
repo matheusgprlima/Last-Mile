@@ -9,6 +9,7 @@ import WhoThisIsFor from './pages/WhoThisIsFor';
 import { analyzeEvidence } from './services/geminiService';
 import { AnalysisResponse } from './types';
 import { DEFAULT_MILESTONES } from './data/defaultMilestones';
+import { prefetchDiscoveries } from './utils/discoveryFeedCache';
 
 function App() {
   const [view, setView] = useState<'landing' | 'app' | 'assist' | 'discoveries' | 'help' | 'who-this-is-for'>('landing');
@@ -26,6 +27,13 @@ function App() {
       });
     }
   }, []);
+
+  // Prefetch discoveries as soon as user enters main app (so Discoveries tab is ready)
+  useEffect(() => {
+    if (view !== 'landing') {
+      prefetchDiscoveries();
+    }
+  }, [view]);
 
   const handleAnalyze = async (text: string) => {
     setIsAnalyzing(true);

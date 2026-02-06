@@ -17,37 +17,9 @@ import {
 } from 'lucide-react';
 import { analyzeDiscovery } from '../services/geminiService';
 import { validateEvidenceSource } from '../utils/evidenceLink';
+import { getFeedFromCache, setFeedCache } from '../utils/discoveryFeedCache';
 
 const SEEN_STORAGE_KEY = 'last_mile_seen_discoveries';
-const FEED_CACHE_KEY = 'last_mile_feed_cache';
-
-interface FeedCache {
-  discoveries: DiscoveryCard[];
-  timestamp: number;
-}
-
-const getFeedFromCache = (): FeedCache | null => {
-  try {
-    const raw = localStorage.getItem(FEED_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as FeedCache;
-    if (!parsed?.discoveries || !Array.isArray(parsed.discoveries)) return null;
-    return { discoveries: parsed.discoveries, timestamp: parsed.timestamp || 0 };
-  } catch {
-    return null;
-  }
-};
-
-const setFeedCache = (discoveries: DiscoveryCard[]) => {
-  try {
-    localStorage.setItem(FEED_CACHE_KEY, JSON.stringify({
-      discoveries,
-      timestamp: Date.now(),
-    } as FeedCache));
-  } catch {
-    /* ignore */
-  }
-};
 
 const applyFeedToState = (
   discoveries: DiscoveryCard[],
