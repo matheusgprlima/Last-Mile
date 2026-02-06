@@ -1,5 +1,6 @@
 import type { AnalysisResponse } from '../types';
 import { createLogger } from './utils/logger.js';
+import { analyzeEvidence } from '../services/geminiService.js';
 
 const log = createLogger('api/analyze');
 
@@ -44,7 +45,6 @@ export default async function handler(
       return;
     }
 
-    const { analyzeEvidence } = await import('../services/geminiService.js');
     const data = await analyzeEvidence(text);
     if (serverCache.size >= MAX_ENTRIES) {
       const first = serverCache.keys().next().value;

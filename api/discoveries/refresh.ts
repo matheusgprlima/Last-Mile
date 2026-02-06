@@ -1,4 +1,5 @@
 import { createLogger } from '../utils/logger.js';
+import { fetchLatestDiscoveries } from '../../services/discoveryMonitor.js';
 
 const log = createLogger('api/refresh');
 
@@ -16,12 +17,6 @@ export default async function handler(
   log.info('Cron or manual refresh started');
 
   try {
-    const { fetchLatestDiscoveries } = await import(
-      '../../services/discoveryMonitor.js'
-    ).catch((e: unknown) => {
-      log.warn('Module load failed', { reason: (e as Error)?.message ?? String(e) });
-      return { fetchLatestDiscoveries: async () => [] as never[] };
-    });
     const discoveries = await fetchLatestDiscoveries(true);
     log.info('Refresh done', { count: discoveries.length });
     res.status(200).json({

@@ -1,4 +1,5 @@
 import { createLogger } from '../utils/logger.js';
+import { fetchLatestDiscoveries } from '../../services/discoveryMonitor.js';
 
 const log = createLogger('api/feed');
 
@@ -18,12 +19,6 @@ export default async function handler(
   log.info('Request', { method: req.method, forceRefresh });
 
   try {
-    const { fetchLatestDiscoveries } = await import(
-      '../../services/discoveryMonitor.js'
-    ).catch((e: unknown) => {
-      log.warn('Module load failed', { reason: (e as Error)?.message ?? String(e) });
-      return { fetchLatestDiscoveries: async () => [] as never[] };
-    });
     const discoveries = await fetchLatestDiscoveries(forceRefresh);
     log.info('Response', { count: discoveries.length });
     res.status(200).json({
