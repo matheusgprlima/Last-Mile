@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { analyzeDiscovery } from '../services/geminiService';
 import { validateEvidenceSource } from '../utils/evidenceLink';
-import { getFeedFromCache, setFeedCache } from '../utils/discoveryFeedCache';
+import { getFeedFromCache, setFeedCache, canFetchFeed, setLastFeedFetchTime } from '../utils/discoveryFeedCache';
 
 const SEEN_STORAGE_KEY = 'last_mile_seen_discoveries';
 
@@ -69,6 +69,7 @@ const DiscoveryFeed: React.FC = () => {
 
   const refreshFeed = async (forceRefresh = false, isBackground = false) => {
     setError(null);
+    if (!forceRefresh && !canFetchFeed(false)) return;
     if (!isBackground) setLoading(true);
     try {
       const url = forceRefresh ? '/api/discoveries/feed?refresh=1' : '/api/discoveries/feed';
@@ -77,6 +78,7 @@ const DiscoveryFeed: React.FC = () => {
       if (data.success && Array.isArray(data.discoveries) && data.discoveries.length > 0) {
         applyFeedToState(data.discoveries, getSeenIds, markIdsAsSeen, setActiveFeed, setLastUpdate);
         setFeedCache(data.discoveries);
+        setLastFeedFetchTime();
       } else {
         const seenIds = getSeenIds();
         const unseen = SEED_DISCOVERIES.filter(d => !seenIds.includes(d.id));
