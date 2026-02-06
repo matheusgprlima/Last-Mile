@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Microscope, Loader2, ArrowUpRight } from 'lucide-react';
+import { Loader2, ArrowUpRight, FileText } from 'lucide-react';
+import { EXAMPLE_ABSTRACT } from '../constants/exampleAbstract';
 
 interface AnalyzerInputProps {
   onAnalyze: (text: string) => void;
@@ -65,23 +66,34 @@ const AnalyzerInput: React.FC<AnalyzerInputProps> = ({
              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
              Secure analysis pipeline
            </div>
-           <button
-            type="submit"
-            disabled={isAnalyzing || !text.trim()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-900/20"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                Analyze
-                <ArrowUpRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+           <div className="flex items-center gap-2">
+             <button
+               type="button"
+               onClick={() => setText(EXAMPLE_ABSTRACT)}
+               disabled={isAnalyzing}
+               className="inline-flex items-center gap-2 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all border border-slate-600"
+             >
+               <FileText className="w-4 h-4" />
+               Example
+             </button>
+             <button
+              type="submit"
+              disabled={isAnalyzing || !text.trim()}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-900/20"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Analyze
+                  <ArrowUpRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+           </div>
         </div>
       </form>
     </div>
