@@ -31,22 +31,6 @@ const RSS_SOURCES: { name: string; url: string }[] = [
     name: 'Google News (trials & research)',
     url: 'https://news.google.com/rss/search?q=HIV+clinical+trial+vaccine+research+treatment+2025&hl=en-US&gl=US&ceid=US:en',
   },
-  {
-    name: 'WHO Africa (health)',
-    url: 'https://www.afro.who.int/rss/featured-news.xml',
-  },
-  {
-    name: 'WHO HIV',
-    url: 'https://www.who.int/feeds/entity/hiv/en/feed.xml',
-  },
-  {
-    name: 'UNAIDS',
-    url: 'https://www.unaids.org/en/feeds/news',
-  },
-  {
-    name: 'HIV.gov',
-    url: 'https://www.hiv.gov/blog/rss-feed',
-  },
 ];
 
 export interface CacheEntry {
