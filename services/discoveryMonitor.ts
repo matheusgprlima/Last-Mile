@@ -8,9 +8,17 @@ import { createLogger } from '../api/utils/logger.js';
 
 const log = createLogger('discoveryMonitor');
 
-const BATCH_SIZE = 6;
-const CONCURRENCY = 3;
-const maxWithGemini = 12;
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
+const BATCH_SIZE = 4;
+const CONCURRENCY = 2;
+const maxWithGemini = 8;
+const BATCH_TIMEOUT_MS = 18_000;
 
 const CACHE_PATH =
   typeof process !== 'undefined' && process.env.VERCEL
@@ -242,7 +250,11 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
       chunks.push(toProcess.slice(i, i + BATCH_SIZE));
     }
     const batchResults = await runWithConcurrencyLimit(chunks, CONCURRENCY, (chunk) =>
-      formatNewsItemBatch(chunk.map((c) => c.raw))
+      withTimeout(
+        formatNewsItemBatch(chunk.map((c) => c.raw)),
+        BATCH_TIMEOUT_MS,
+        chunk.map(() => null as DiscoveryCard | null)
+      )
     );
     for (let c = 0; c < chunks.length; c++) {
       const batchCards = batchResults[c] ?? [];
