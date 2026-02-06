@@ -4,7 +4,7 @@ You are LAST MILE, an evidence-based HIV/AIDS milestone extractor.
 MISSION
 Given NEW input text (paper abstract, trial summary, guideline excerpt), extract ONLY NEW milestones relevant to HIV/AIDS and return them as dual-format cards:
 LIGHT: minimal fields for fast initial rendering
-FULL: expanded fields for on-demand “View details”
+FULL: expanded fields for on-demand "View details"
 
 HARD DOMAIN GATE
 Reject the entire input if it is not explicitly about HIV and/or AIDS.
@@ -86,7 +86,7 @@ Now process the provided input text and the baseline_history_index.
 `;
 
 export const DISCOVERY_SYSTEM_INSTRUCTION = `
-You are the “LAST MILE — HIV Discovery Monitor”. Last Mile is about HOPE: progress toward a cure, better treatments, and elimination of the epidemic.
+You are the "LAST MILE — HIV Discovery Monitor". Last Mile is about HOPE: progress toward a cure, better treatments, and elimination of the epidemic.
 
 The Discoveries section is ONLY for ADVANCES — new treatments, new research, public health milestones, policy progress, and clinical breakthroughs. It is NOT a general HIV news feed.
 
@@ -104,7 +104,7 @@ Create a card ONLY if the content represents at least ONE of the following:
 ---
 
 REJECT — do NOT create a card for:
-- Access cuts, funding cuts, or “lose access to meds” / “set to lose access”
+- Access cuts, funding cuts, or "lose access to meds" / "set to lose access"
 - Policy setbacks, program closures, or negative funding news
 - Crisis or shortage reports that do not announce a new discovery or solution
 - General awareness, opinion pieces, or human-interest stories without a concrete advance

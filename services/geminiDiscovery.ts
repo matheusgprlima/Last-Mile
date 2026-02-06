@@ -3,7 +3,7 @@
  * Used by discoveryMonitor (API / server). Batch + concurrency for performance.
  */
 import { GoogleGenAI } from '@google/genai';
-import { DISCOVERY_FORMAT_INSTRUCTION, DISCOVERY_FORMAT_BATCH_INSTRUCTION } from '../constants.js';
+import { DISCOVERY_FORMAT_INSTRUCTION, DISCOVERY_FORMAT_BATCH_INSTRUCTION } from '../prompts.js';
 import type { DiscoveryCard, DiscoveryResponse } from '../types.js';
 import { createLogger } from '../api/utils/logger.js';
 
