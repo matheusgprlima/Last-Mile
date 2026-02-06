@@ -19,6 +19,58 @@ import { analyzeDiscovery } from '../services/geminiService';
 import { validateEvidenceSource } from '../utils/evidenceLink';
 
 const SEEN_STORAGE_KEY = 'last_mile_seen_discoveries';
+const FEED_CACHE_KEY = 'last_mile_feed_cache';
+
+interface FeedCache {
+  discoveries: DiscoveryCard[];
+  timestamp: number;
+}
+
+const getFeedFromCache = (): FeedCache | null => {
+  try {
+    const raw = localStorage.getItem(FEED_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as FeedCache;
+    if (!parsed?.discoveries || !Array.isArray(parsed.discoveries)) return null;
+    return { discoveries: parsed.discoveries, timestamp: parsed.timestamp || 0 };
+  } catch {
+    return null;
+  }
+};
+
+const setFeedCache = (discoveries: DiscoveryCard[]) => {
+  try {
+    localStorage.setItem(FEED_CACHE_KEY, JSON.stringify({
+      discoveries,
+      timestamp: Date.now(),
+    } as FeedCache));
+  } catch {
+    /* ignore */
+  }
+};
+
+const applyFeedToState = (
+  discoveries: DiscoveryCard[],
+  getSeenIds: () => string[],
+  markIdsAsSeen: (ids: string[]) => void,
+  setActiveFeed: (feed: DiscoveryCard[]) => void,
+  setLastUpdate: (s: string) => void,
+  timestamp?: number
+) => {
+  const seenIds = getSeenIds();
+  const pool = discoveries.length >= 4 ? discoveries : SEED_DISCOVERIES;
+  const unseen = pool.filter((d: DiscoveryCard) => !seenIds.includes(d.id));
+  const source = unseen.length >= 4 ? unseen : pool;
+  const shuffled = [...source].sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, 8);
+  setActiveFeed(selected);
+  markIdsAsSeen(selected.map((s: DiscoveryCard) => s.id));
+  setLastUpdate(
+    timestamp
+      ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  );
+};
 
 const DiscoveryFeed: React.FC = () => {
   const [showInput, setShowInput] = useState(false);
@@ -29,7 +81,6 @@ const DiscoveryFeed: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Load seen IDs from storage
   const getSeenIds = (): string[] => {
     try {
       return JSON.parse(localStorage.getItem(SEEN_STORAGE_KEY) || '[]');
@@ -44,21 +95,16 @@ const DiscoveryFeed: React.FC = () => {
     localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(updated));
   };
 
-  const refreshFeed = async () => {
+  const refreshFeed = async (forceRefresh = false, isBackground = false) => {
     setError(null);
-    setLoading(true);
+    if (!isBackground) setLoading(true);
     try {
-      const res = await fetch('/api/discoveries/feed?refresh=1');
+      const url = forceRefresh ? '/api/discoveries/feed?refresh=1' : '/api/discoveries/feed';
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success && Array.isArray(data.discoveries) && data.discoveries.length > 0) {
-        const seenIds = getSeenIds();
-        const unseen = data.discoveries.filter((d: DiscoveryCard) => !seenIds.includes(d.id));
-        const pool = unseen.length >= 4 ? unseen : data.discoveries;
-        const shuffled = [...pool].sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, 8);
-        setActiveFeed(selected);
-        markIdsAsSeen(selected.map((s: DiscoveryCard) => s.id));
-        setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        applyFeedToState(data.discoveries, getSeenIds, markIdsAsSeen, setActiveFeed, setLastUpdate);
+        setFeedCache(data.discoveries);
       } else {
         const seenIds = getSeenIds();
         const unseen = SEED_DISCOVERIES.filter(d => !seenIds.includes(d.id));
@@ -74,23 +120,33 @@ const DiscoveryFeed: React.FC = () => {
         else setError(null);
       }
     } catch {
-      const seenIds = getSeenIds();
-      const unseen = SEED_DISCOVERIES.filter(d => !seenIds.includes(d.id));
-      const pool = unseen.length >= 4 ? unseen : SEED_DISCOVERIES;
-      const shuffled = [...pool].sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, 4);
-      setActiveFeed(selected);
-      markIdsAsSeen(selected.map(s => s.id));
-      setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      setError('Network error. Showing cached discoveries.');
+      const cached = getFeedFromCache();
+      if (cached?.discoveries?.length) {
+        applyFeedToState(cached.discoveries, getSeenIds, markIdsAsSeen, setActiveFeed, setLastUpdate, cached.timestamp);
+        setError('Network error. Showing cached discoveries.');
+      } else {
+        const seenIds = getSeenIds();
+        const unseen = SEED_DISCOVERIES.filter(d => !seenIds.includes(d.id));
+        const pool = unseen.length >= 4 ? unseen : SEED_DISCOVERIES;
+        const shuffled = [...pool].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 4);
+        setActiveFeed(selected);
+        markIdsAsSeen(selected.map(s => s.id));
+        setLastUpdate(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        setError('Network error. Showing curated discoveries.');
+      }
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
-  // Initial load: try API first, then seed
+  // Initial load: show cache immediately, then fetch in background and save
   useEffect(() => {
-    void refreshFeed();
+    const cached = getFeedFromCache();
+    if (cached?.discoveries?.length) {
+      applyFeedToState(cached.discoveries, getSeenIds, markIdsAsSeen, setActiveFeed, setLastUpdate, cached.timestamp);
+    }
+    void refreshFeed(false, true);
   }, []);
 
   const handleAnalyze = async (text: string) => {
@@ -151,7 +207,7 @@ const DiscoveryFeed: React.FC = () => {
             UPDATED {lastUpdate.toUpperCase()}
           </div>
           <button 
-            onClick={() => void refreshFeed()}
+            onClick={() => void refreshFeed(true)}
             disabled={loading}
             className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition-colors text-xs font-semibold uppercase tracking-wide group disabled:opacity-50 disabled:cursor-not-allowed"
             title="Refresh feed with latest HIV/AIDS news"
