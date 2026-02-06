@@ -1,47 +1,5 @@
 /** Example abstract for the analyzer "Example" button (CCR5 gene editing & HIV immunotherapy). */
-export const EXAMPLE_ABSTRACT = `OPEN ACCESS
-EDITED BY
-Guido Poli, Vita-Salute San Raffaele University, Italy
-REVIEWED BY
-Daniela Cesana, San Raffaele Telethon Institute for Gene Therapy (SR-Tiget), Italy
-*CORRESPONDENCE
-Jian-Jun Xun
-46700704@hebmu.edu.cn
-RECEIVED 10 March 2025
-ACCEPTED 02 June 2025 PUBLISHED 18 June 2025
-CITATION
-Wang J-W, Liu J-H and Xun J-J (2025) CCR5 gene editing and HIV immunotherapy: current understandings, challenges, and future directions. Front. Immunol. 16:1590690. doi: 10.3389/fimmu.2025.1590690
-COPYRIGHT
-© 2025 Wang, Liu and Xun. This is an open-access article distributed under the terms of the Creative Commons Attribution License (CC BY). The use, distribution or reproduction in other forums is permitted, provided the original author(s) and the copyright owner(s) are credited and that the original publication in this journal is cited, in accordance with accepted academic practice. No use, distribution or reproduction is permitted which does not comply with these terms.
-PUBLISHED 18 June 2025
-DOI 10.3389/fimmu.2025.1590690
-CCR5 gene editing and HIV immunotherapy: current understandings, challenges, and future directions
-Jia-Wen Wang, Jia-Hui Liu and Jian-Jun Xun*
-Department of Orthopedics, The Fourth Hospital of Hebei Medical University, Shijiazhuang, Hebei, China
-Human immunodeficiency virus (HIV) infection remains a major global public
-health challenge. Although highly active antiretroviral therapy (HAART or ART)
-can effectively control viral replication, it fails to eradicate latent viral reservoirs
-and poses limitations such as lifelong medication and cumulative drug toxicity.
-This study focuses on the pivotal role of C-C chemokine receptor 5 (CCR5) gene
-editing in HIV immunotherapy, particularly highlighting the natural resistance to
-R5-tropic HIV strains observed in the "Berlin" and "London" patients carrying the
-homozygous CCR5-D32mutation. We further explore the synergistic potential of
-multiplex gene editing strategies—including CCR5, CXCR4, and HIV LTR loci—
-and the combinatorial mechanisms between gene editing technologies and
-immunotherapy. A personalized treatment framework is proposed to address
-the clinical heterogeneity among people living with HIV. In addition, we assess
-the balance between long-term safety and global accessibility of gene-editing
-approaches such as CRISPR/Cas9, emphasizing strategies to enhance
-therapeutic efficacy while reducing cost and off-target effects. Our findings
-suggest that the integration of CCR5-targeted gene editing with immune-
-based interventions holds great promise for overcoming current therapeutic
-limitations and achieving functional HIV cure. However, key challenges—such as
-immune rejection, viral tropism switching, and economic feasibility—must be
-resolved. This integrative approach provides a robust theoretical and technical
-foundation for the next generation of HIV treatment paradigms.
-KEYWORDS
-HIV, CCR5, gene editing, immunotherapy, synergistic strategy, viral reservoir, challenges, future directions
-1 Introduction
+export const EXAMPLE_ABSTRACT = `
 Human immunodeficiency virus (HIV) has exerted a profound impact on global public
 health, claiming millions of lives (1). Highly active antiretroviral therapy (HAART or ART)
 has significantly altered the natural course of HIV infection, prolonging survival and
