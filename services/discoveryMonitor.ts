@@ -2,10 +2,15 @@ import Parser from 'rss-parser';
 import fs from 'fs/promises';
 import path from 'path';
 import type { DiscoveryCard } from '../types.js';
-import { formatNewsItem } from './geminiDiscovery.js';
+import { formatNewsItemBatch, type RawNewsItem } from './geminiDiscovery.js';
+import { runWithConcurrencyLimit } from '../api/utils/concurrency.js';
 import { createLogger } from '../api/utils/logger.js';
 
 const log = createLogger('discoveryMonitor');
+
+const BATCH_SIZE = 6;
+const CONCURRENCY = 3;
+const maxWithGemini = 12;
 
 const CACHE_PATH =
   typeof process !== 'undefined' && process.env.VERCEL
@@ -185,9 +190,8 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
   const seenTitles = new Set<string>();
   const discoveries: DiscoveryCard[] = [];
   const useGemini = Boolean(process.env.GEMINI_API_KEY?.trim());
-  const maxWithGemini = 10;
 
-  if (useGemini) log.info('Using Gemini to validate items');
+  if (useGemini) log.info('Using Gemini to validate items', { batchSize: BATCH_SIZE, concurrency: CONCURRENCY });
 
   const notDiscoveryPhrases = [
     'lose access',
@@ -211,50 +215,74 @@ export async function fetchLatestDiscoveries(forceRefresh = false): Promise<Disc
     'daily mail',
   ];
 
-  for (const { item, sourceName, index } of allItems) {
-    const title = (item.title || '').trim();
-    const titleLower = title.toLowerCase();
-    if (!title || seenTitles.has(titleLower)) continue;
-    seenTitles.add(titleLower);
-
-    const summary = stripHtml(item.content || item.contentSnippet || title);
-    if (!isHIVRelated(title + ' ' + summary)) continue;
-
-    if (useGemini) {
-      const raw = {
-        title: item.title || 'Untitled',
-        summary,
-        link: item.link || '',
+  if (useGemini) {
+    const toProcess: { raw: RawNewsItem; index: number; sourceName: string }[] = [];
+    for (const { item, sourceName, index } of allItems) {
+      const title = (item.title || '').trim();
+      const titleLower = title.toLowerCase();
+      if (!title || seenTitles.has(titleLower)) continue;
+      seenTitles.add(titleLower);
+      const summary = stripHtml(item.content || item.contentSnippet || title);
+      if (!isHIVRelated(title + ' ' + summary)) continue;
+      toProcess.push({
+        raw: {
+          title: item.title || 'Untitled',
+          summary,
+          link: item.link || '',
+          sourceName,
+          date: item.pubDate,
+        },
+        index,
         sourceName,
-        date: item.pubDate,
-      };
-      const card = await formatNewsItem(raw);
-      if (card) {
-        if (!isHIVRelated(card.title + ' ' + (card.summary || ''))) continue;
+      });
+      if (toProcess.length >= maxWithGemini) break;
+    }
+    const chunks: { raw: RawNewsItem; index: number; sourceName: string }[][] = [];
+    for (let i = 0; i < toProcess.length; i += BATCH_SIZE) {
+      chunks.push(toProcess.slice(i, i + BATCH_SIZE));
+    }
+    const batchResults = await runWithConcurrencyLimit(chunks, CONCURRENCY, (chunk) =>
+      formatNewsItemBatch(chunk.map((c) => c.raw))
+    );
+    for (let c = 0; c < chunks.length; c++) {
+      const batchCards = batchResults[c] ?? [];
+      const chunkItems = chunks[c] ?? [];
+      for (let i = 0; i < batchCards.length; i++) {
+        const card = batchCards[i];
+        if (!card) continue;
+        const { raw, index, sourceName } = chunkItems[i];
+        if (!isHIVRelated(card.title + ' ' + (card.summary ?? ''))) continue;
         card.id = card.id || `${slugify(raw.title)}-${index}-${Date.now().toString(36)}`;
-        if (!card.source_labels?.length && card.sources?.length)
+        if (!card.source_labels?.length && card.sources?.length) {
           card.source_labels = card.sources.map(() => sourceName);
+        }
         discoveries.push(card);
       }
-      continue;
     }
-
-    const looksLikeNonDiscovery = notDiscoveryPhrases.some((p) => titleLower.includes(p));
-    if (looksLikeNonDiscovery) continue;
-
-    discoveries.push(
-      itemToDiscoveryCard(
-        {
-          title: item.title,
-          link: item.link,
-          content: item.content,
-          contentSnippet: item.contentSnippet,
-          pubDate: item.pubDate,
-        },
-        sourceName,
-        index
-      )
-    );
+  } else {
+    for (const { item, sourceName, index } of allItems) {
+      const title = (item.title || '').trim();
+      const titleLower = title.toLowerCase();
+      if (!title || seenTitles.has(titleLower)) continue;
+      seenTitles.add(titleLower);
+      const summary = stripHtml(item.content || item.contentSnippet || title);
+      if (!isHIVRelated(title + ' ' + summary)) continue;
+      const looksLikeNonDiscovery = notDiscoveryPhrases.some((p) => titleLower.includes(p));
+      if (looksLikeNonDiscovery) continue;
+      discoveries.push(
+        itemToDiscoveryCard(
+          {
+            title: item.title,
+            link: item.link,
+            content: item.content,
+            contentSnippet: item.contentSnippet,
+            pubDate: item.pubDate,
+          },
+          sourceName,
+          index
+        )
+      );
+    }
   }
 
     log.info('Fetch complete', {

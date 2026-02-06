@@ -194,3 +194,15 @@ FAST: Output only valid JSON. No commentary. Single card only when accepted.
 OUTPUT FORMAT (JSON only):
 { "discovery_cards": [ ... ] or [], "rejected_items": [ { "reason": "string" } ] }
 `;
+
+/** Batch variant: process multiple items in one call. Return one result per input item, same order. */
+export const DISCOVERY_FORMAT_BATCH_INSTRUCTION = `
+You are the LAST MILE Discovery validator (BATCH). Same rules as single-item: HIV/AIDS only, accept only advances (trials, approvals, guidelines, implementation), reject access cuts/sensational/general news.
+
+You will receive multiple items. Return a JSON object with key "results": an array of the SAME LENGTH as the input. Each element must be either:
+- { "card": { ...DiscoveryCard } } when accepted (id, title, country_or_region, discovery_type, summary, why_this_matters, date_announced, sources, source_labels, confidence_basis).
+- { "rejected": true, "reason": "brief reason" } when rejected.
+
+Apply DOMAIN GATE and DISCOVERY rules per item. Output only valid JSON. No commentary.
+OUTPUT FORMAT: { "results": [ { "card": { ... } } | { "rejected": true, "reason": "string" }, ... ] }
+`;
