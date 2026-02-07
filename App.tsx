@@ -6,7 +6,7 @@ import DiscoveryFeed from './components/DiscoveryFeed';
 import Assist from './pages/Assist';
 import GetHelp from './pages/GetHelp';
 import WhoThisIsFor from './pages/WhoThisIsFor';
-import { AnalysisResponse } from './types';
+import { AnalysisResponse, NewCard } from './types';
 import { DEFAULT_MILESTONES } from './data/defaultMilestones';
 import { prefetchDiscoveries } from './utils/discoveryFeedCache';
 import { getCachedAnalysis, setCachedAnalysis } from './utils/analysisCache';
@@ -34,6 +34,14 @@ function App() {
       prefetchDiscoveries();
     }
   }, [view]);
+
+  const handleDeleteCard = (card: NewCard) => {
+    setResult(prev => {
+      if (!prev?.new_cards) return prev;
+      const next = prev.new_cards.filter(c => c !== card);
+      return { ...prev, new_cards: next };
+    });
+  };
 
   const handleAnalyze = async (text: string) => {
     setIsAnalyzing(true);
@@ -199,6 +207,7 @@ function App() {
             <AnalysisResultDisplay 
                data={result} 
                onAnalyzeNew={handleAnalyze} 
+               onDeleteCard={handleDeleteCard}
                isAnalyzing={isAnalyzing} 
             />
           </>

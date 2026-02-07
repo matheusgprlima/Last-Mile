@@ -17,7 +17,8 @@ import {
   ClipboardCheck,
   TrendingUp,
   Sparkles,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import AnalyzerInput from './AnalyzerInput';
 import { validateEvidenceSource } from '../utils/evidenceLink';
@@ -27,10 +28,11 @@ import NotebookLMModal from './NotebookLMModal';
 interface AnalysisResultDisplayProps {
   data: AnalysisResponse | null;
   onAnalyzeNew: (text: string) => void;
+  onDeleteCard?: (card: NewCard) => void;
   isAnalyzing: boolean;
 }
 
-const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({ data, onAnalyzeNew, isAnalyzing }) => {
+const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({ data, onAnalyzeNew, onDeleteCard, isAnalyzing }) => {
   const [showInput, setShowInput] = useState(false);
   const [selectedCard, setSelectedCard] = useState<NewCard | null>(null);
 
@@ -123,7 +125,8 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({ data, onA
       {selectedCard && (
         <FullAnalysisModal 
           card={selectedCard} 
-          onClose={() => setSelectedCard(null)} 
+          onClose={() => setSelectedCard(null)}
+          onDeleteCard={onDeleteCard}
         />
       )}
     </div>
@@ -231,7 +234,7 @@ const EvidenceCard: React.FC<{ card: NewCard; onClick: () => void }> = ({ card, 
 };
 
 /* FullAnalysisModal: On-demand details for a specific milestone */
-const FullAnalysisModal: React.FC<{ card: NewCard; onClose: () => void }> = ({ card, onClose }) => {
+const FullAnalysisModal: React.FC<{ card: NewCard; onClose: () => void; onDeleteCard?: (card: NewCard) => void }> = ({ card, onClose, onDeleteCard }) => {
   const { light, full } = card;
   const [showNotebookModal, setShowNotebookModal] = useState(false);
 
@@ -377,13 +380,25 @@ const FullAnalysisModal: React.FC<{ card: NewCard; onClose: () => void }> = ({ c
                     <BookOpen className="w-4 h-4" />
                     <h3 className="text-xs font-bold uppercase tracking-widest">Evidence Sources</h3>
                 </div>
-                <button 
-                    onClick={() => setShowNotebookModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 hover:from-blue-800/40 hover:to-indigo-800/40 text-blue-200 hover:text-white rounded-lg border border-blue-500/20 hover:border-blue-400/40 transition-all text-xs font-semibold shadow-sm"
-                >
-                    <Sparkles className="w-4 h-4 text-blue-400" />
-                    Study in NotebookLM
-                </button>
+                <div className="flex flex-col items-end gap-4">
+                  <button 
+                      onClick={() => setShowNotebookModal(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 hover:from-blue-800/40 hover:to-indigo-800/40 text-blue-200 hover:text-white rounded-lg border border-blue-500/20 hover:border-blue-400/40 transition-all text-xs font-semibold shadow-sm"
+                  >
+                      <Sparkles className="w-4 h-4 text-blue-400" />
+                      Study in NotebookLM
+                  </button>
+                  {onDeleteCard && (
+                    <button 
+                      type="button"
+                      onClick={() => { onDeleteCard(card); onClose(); }}
+                      className="flex items-center gap-2 px-4 py-2 bg-red-950/60 hover:bg-red-900/60 text-red-200 hover:text-red-100 rounded-lg border border-red-800/50 hover:border-red-600/60 transition-all text-xs font-semibold"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-400" />
+                      Delete card
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
