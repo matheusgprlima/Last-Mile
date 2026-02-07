@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import GetHelpSection from '../components/GetHelpSection';
-import { LifeBuoy, AlertCircle, Phone, Globe, ChevronDown, X } from 'lucide-react';
-import { EMERGENCY_CONTACTS } from '../data/emergencyContacts';
+import { LifeBuoy, AlertCircle, Phone, Globe, ChevronDown, X, ExternalLink } from 'lucide-react';
+import { EMERGENCY_CONTACTS, GLOBAL_CRISIS_SERVICE } from '../data/emergencyContacts';
 
 const GetHelp: React.FC = () => {
   const [showEmergency, setShowEmergency] = useState(false);
@@ -85,6 +85,10 @@ const GetHelp: React.FC = () => {
                     >
                        <option value="US">United States</option>
                        <option value="BR">Brazil</option>
+                       <option value="IR">Iran</option>
+                       <option value="PS">Gaza / Palestine</option>
+                       <option value="UA">Ukraine</option>
+                       <option value="VE">Venezuela</option>
                        <option value="GLOBAL">Global / Other</option>
                     </select>
                     <Globe className="absolute left-3 top-3 w-4 h-4 text-slate-500 pointer-events-none" />
@@ -93,22 +97,52 @@ const GetHelp: React.FC = () => {
                </div>
 
                <div className="space-y-3">
-                  {(EMERGENCY_CONTACTS[selectedCountry] || EMERGENCY_CONTACTS["GLOBAL"]).services.map((service, idx) => (
-                    <a 
-                      key={idx}
-                      href={`tel:${service.phone}`}
-                      className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 hover:bg-red-900/20 border border-slate-700 hover:border-red-500/50 transition-all group"
-                    >
-                       <div>
-                         <div className="font-bold text-slate-200 group-hover:text-red-100">{service.name}</div>
-                         <div className="text-xs text-slate-500 mt-0.5">Tap to call</div>
-                       </div>
-                       <div className="flex items-center gap-2 text-xl font-mono font-bold text-red-400 group-hover:text-red-300">
-                         <Phone className="w-5 h-5" />
-                         {service.phone}
-                       </div>
-                    </a>
-                  ))}
+                  {[
+                    ...(EMERGENCY_CONTACTS[selectedCountry] || EMERGENCY_CONTACTS["GLOBAL"]).services,
+                    ...(selectedCountry !== "GLOBAL" ? [GLOBAL_CRISIS_SERVICE] : [])
+                  ].map((service, idx) => {
+                    const hasUrl = Boolean(service.url);
+                    const hasPhone = Boolean(service.phone);
+                    if (hasUrl) {
+                      return (
+                        <a
+                          key={idx}
+                          href={service.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 hover:bg-red-900/20 border border-slate-700 hover:border-red-500/50 transition-all group"
+                        >
+                          <div>
+                            <div className="font-bold text-slate-200 group-hover:text-red-100">{service.name}</div>
+                            <div className="text-xs text-slate-500 mt-0.5">Tap to open</div>
+                          </div>
+                          <div className="flex items-center gap-2 text-red-400 group-hover:text-red-300">
+                            <span className="text-xs font-medium">Visit</span>
+                            <ExternalLink className="w-4 h-4" />
+                          </div>
+                        </a>
+                      );
+                    }
+                    if (hasPhone) {
+                      return (
+                        <a
+                          key={idx}
+                          href={`tel:${service.phone}`}
+                          className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 hover:bg-red-900/20 border border-slate-700 hover:border-red-500/50 transition-all group"
+                        >
+                          <div>
+                            <div className="font-bold text-slate-200 group-hover:text-red-100">{service.name}</div>
+                            <div className="text-xs text-slate-500 mt-0.5">Tap to call</div>
+                          </div>
+                          <div className="flex items-center gap-2 text-xl font-mono font-bold text-red-400 group-hover:text-red-300">
+                            <Phone className="w-5 h-5" />
+                            {service.phone}
+                          </div>
+                        </a>
+                      );
+                    }
+                    return null;
+                  })}
                </div>
                
                <p className="mt-6 text-xs text-slate-500 text-center leading-relaxed">
