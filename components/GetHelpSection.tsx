@@ -12,8 +12,10 @@ const GetHelpSection: React.FC = () => {
     return getHelpCardsForLocation({ country, region }, immigrantToggle);
   }, [country, region, immigrantToggle]);
 
-  // Check valid config: US-CA or BR
-  const hasOfficialConfig = (country === "US" && region === "CA") || (country === "BR");
+  // Locations with dedicated content (US-CA, US-FL, BR, IR, PS, UA, VE)
+  const hasOfficialConfig = ["US-CA", "US-FL", "BR", "IR", "PS", "UA", "VE"].includes(
+    country === "US" ? `${country}-${region}` : country
+  );
 
   return (
     <section className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -44,6 +46,10 @@ const GetHelpSection: React.FC = () => {
               >
                 <option value="US">United States</option>
                 <option value="BR">Brazil</option>
+                <option value="IR">Iran</option>
+                <option value="PS">Gaza / Palestine</option>
+                <option value="UA">Ukraine</option>
+                <option value="VE">Venezuela</option>
                 <option value="GLOBAL">Other (Global)</option>
               </select>
               <Globe className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none" />
@@ -58,8 +64,7 @@ const GetHelpSection: React.FC = () => {
                   className="appearance-none bg-slate-800 text-slate-200 text-sm pl-9 pr-8 py-2 rounded-lg border border-slate-700 focus:border-blue-500 outline-none cursor-pointer hover:bg-slate-700 transition-colors"
                 >
                   <option value="CA">California</option>
-                  <option value="NY">New York (Soon)</option>
-                  <option value="TX">Texas (Soon)</option>
+                  <option value="FL">Florida</option>
                 </select>
                 <MapPin className="absolute left-2.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none" />
                 <ChevronDown className="absolute right-2.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none" />

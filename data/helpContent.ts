@@ -1,4 +1,4 @@
-export type Authority = "CDC" | "CDPH" | "HIV.gov" | "UNAIDS" | "WHO" | "NIH" | "LocalGov" | "NGO_Legal" | "HRSA";
+export type Authority = "CDC" | "CDPH" | "UNAIDS" | "WHO" | "NIH" | "LocalGov" | "NGO_Legal" | "HRSA" | "UNHCR" | "MSF" | "PAHO" | "UNRWA" | "GlobalFund";
 
 export interface HelpLink {
   label: string;
@@ -39,9 +39,10 @@ const US_CA_CONTENT: HelpCard[] = [
         note: "Search by zip code"
       },
       {
-        label: "HIV.gov Services Locator",
-        url: "https://locator.hiv.gov/",
-        authority: "HIV.gov"
+        label: "Find HIV Care (Ryan White)",
+        url: "https://findhivcare.hrsa.gov/",
+        authority: "HRSA",
+        note: "HIV care providers by location"
       }
     ],
     what_you_need: ["No ID required for most anonymous sites", "Walk-ins often accepted"]
@@ -215,28 +216,394 @@ const BR_CONTENT: HelpCard[] = [
   }
 ];
 
-const GLOBAL_FALLBACK: HelpCard[] = [
+// Florida (US) — official state and federal resources
+const US_FL_CONTENT: HelpCard[] = [
   {
     id: "testing",
-    title: "Global HIV Testing",
-    description: "Find WHO and UNAIDS recognized testing information.",
+    title: "HIV Testing Services",
+    description: "Free, confidential testing locations across Florida.",
     links: [
       {
-        label: "UNAIDS Testing Services",
-        url: "https://www.unaids.org/en",
-        authority: "UNAIDS"
+        label: "Find Testing Sites (CDC)",
+        url: "https://gettested.cdc.gov/",
+        authority: "CDC",
+        note: "Search by zip code"
+      },
+      {
+        label: "Find HIV Care (Ryan White)",
+        url: "https://findhivcare.hrsa.gov/",
+        authority: "HRSA",
+        note: "HIV care providers by location"
+      }
+    ],
+    what_you_need: ["No ID required for most anonymous sites", "Walk-ins often accepted"]
+  },
+  {
+    id: "treatment",
+    title: "Treatment & ADAP",
+    description: "Florida ADAP provides medication assistance for people living with HIV who meet income and residency criteria.",
+    links: [
+      {
+        label: "Florida ADAP (AIDS Drug Assistance)",
+        url: "https://floridaadap.org/",
+        authority: "LocalGov",
+        note: "State program – prescriptions for eligible residents"
+      },
+      {
+        label: "Find a Health Center (HRSA)",
+        url: "https://findahealthcenter.hrsa.gov/",
+        authority: "HRSA",
+        note: "Low-cost / sliding scale care"
+      }
+    ],
+    eligibility_notes: [
+      "Florida resident",
+      "Income at or below 400% Federal Poverty Level",
+      "Uninsured or inadequate prescription coverage"
+    ],
+    what_you_need: ["Proof of residency", "Proof of income", "HIV diagnosis"]
+  },
+  {
+    id: "prep_pep",
+    title: "PrEP & PEP",
+    description: "Find PrEP and nPEP (emergency) providers in Florida.",
+    links: [
+      {
+        label: "Florida PrEP & nPEP Clinic Search",
+        url: "https://flhiv.doh.state.fl.us/ClinicSearch/FloridaPrEPnPrEPClinicSearch.aspx",
+        authority: "LocalGov",
+        note: "State health department – by area"
+      },
+      {
+        label: "National PrEP Locator",
+        url: "https://preplocator.org/",
+        authority: "NGO_Legal",
+        note: "Find providers near you"
+      }
+    ],
+    eligibility_notes: [
+      "PrEP for ongoing prevention",
+      "PEP must be started within 72 hours of exposure"
+    ]
+  },
+  {
+    id: "immigrant_legal",
+    title: "Immigrant & Legal Support",
+    description: "Legal and health access support for immigrants living with HIV.",
+    links: [
+      {
+        label: "Immigration Equality",
+        url: "https://immigrationequality.org/",
+        authority: "NGO_Legal",
+        note: "National legal resource"
+      },
+      {
+        label: "Find HIV Care (HRSA)",
+        url: "https://findhivcare.hrsa.gov/",
+        authority: "HRSA",
+        note: "Ryan White providers – often serve regardless of status"
+      }
+    ]
+  },
+  {
+    id: "support",
+    title: "Support & Care",
+    description: "Ryan White and care coordination in Florida.",
+    links: [
+      {
+        label: "Ryan White HIV/AIDS Program",
+        url: "https://ryanwhite.hrsa.gov/hiv-care",
+        authority: "HRSA",
+        note: "Federal program for low-income support"
+      }
+    ]
+  }
+];
+
+// Iran — access in complex context (UNAIDS/WHO)
+const IR_CONTENT: HelpCard[] = [
+  {
+    id: "testing",
+    title: "Teste e Informação (Irã)",
+    description: "Informações oficiais sobre HIV e serviços de testagem no Irã, com apoio da OMS e UNAIDS.",
+    links: [
+      {
+        label: "UNAIDS – Irã (país)",
+        url: "https://www.unaids.org/en/regionscountries/countries/islamicrepublicofiran",
+        authority: "UNAIDS",
+        note: "Dados e programas nacionais"
+      },
+      {
+        label: "OMS – Irã",
+        url: "https://www.who.int/countries/irn/",
+        authority: "WHO",
+        note: "Perfil de saúde e programas"
       }
     ]
   },
   {
     id: "treatment",
-    title: "Treatment Information",
-    description: "International guidelines on Antiretroviral Therapy (ART).",
+    title: "Acesso a Tratamento (ART)",
+    description: "O Irã dispõe de programas de TARV com apoio internacional. A UNAIDS apoia multimonth dispensing e aquisição de medicamentos.",
+    links: [
+      {
+        label: "UNAIDS – Irã (recursos e resposta)",
+        url: "https://www.unaids.org/en/regionscountries/countries/islamicrepublicofiran",
+        authority: "UNAIDS",
+        note: "Acesso a tratamento e medicamentos"
+      },
+      {
+        label: "OMS – HIV e AIDS",
+        url: "https://www.who.int/health-topics/hiv-aids",
+        authority: "WHO",
+        note: "Diretrizes globais de tratamento"
+      }
+    ],
+    eligibility_notes: [
+      "Serviços vinculados ao Ministério da Saúde",
+      "Barreiras comuns: transporte, estigma, custo – procure unidades de confiança"
+    ]
+  },
+  {
+    id: "support",
+    title: "Suporte e Redes",
+    description: "Organizações internacionais e redes locais podem ajudar a localizar serviços e apoio.",
+    links: [
+      {
+        label: "UNAIDS – Coalizão de Prevenção (Irã)",
+        url: "https://www.unaids.org/en/regionscountries/countries/islamicrepublicofiran",
+        authority: "UNAIDS",
+        note: "Estratégias nacionais e parceiros"
+      }
+    ]
+  }
+];
+
+// Gaza / Palestina — contexto humanitário (OMS, UNRWA)
+const PS_CONTENT: HelpCard[] = [
+  {
+    id: "testing",
+    title: "Testagem e Informação (Gaza / Palestina)",
+    description: "Em contexto de crise, serviços de saúde estão sob forte pressão. OMS e UNRWA mantêm esforços de saúde para refugiados e população local.",
+    links: [
+      {
+        label: "OMS – Território Palestino Ocupado",
+        url: "https://www.who.int/countries/pse/",
+        authority: "WHO",
+        note: "Perfil de saúde e emergências"
+      },
+      {
+        label: "UNRWA – Saúde",
+        url: "https://www.unrwa.org/our-work/health",
+        authority: "UNRWA",
+        note: "Serviços de saúde para refugiados palestinos"
+      }
+    ]
+  },
+  {
+    id: "treatment",
+    title: "Acesso a Medicamentos (ART) em Crise",
+    description: "Acesso a ART e medicamentos essenciais é afetado pelo conflito. OMS e parceiros distribuem suprimentos e apoiam estruturas de saúde quando possível.",
+    links: [
+      {
+        label: "OMS – Apelo de Emergência Saúde (oPt) 2025",
+        url: "https://www.who.int/publications/m/item/occupied-palestinian-territory--who-health-emergency-appeal-2025",
+        authority: "WHO",
+        note: "Resposta de emergência e medicamentos"
+      },
+      {
+        label: "Cluster de Saúde – oPt (OMS)",
+        url: "https://healthcluster.who.int/countries-and-regions/occupied-palestinian-territory",
+        authority: "WHO",
+        note: "Coordenação de saúde em emergência"
+      }
+    ],
+    eligibility_notes: [
+      "Serviços variam conforme segurança e disponibilidade de medicamentos",
+      "Procure postos UNRWA ou unidades de saúde indicadas por OMS/parceiros"
+    ]
+  },
+  {
+    id: "support",
+    title: "Suporte Humanitário",
+    description: "Organizações humanitárias tentam manter cuidados de saúde e medicamentos onde há acesso.",
+    links: [
+      {
+        label: "UNRWA – Onde atuamos",
+        url: "https://www.unrwa.org/where-we-work/gaza-strip",
+        authority: "UNRWA",
+        note: "Serviços e pontos de atendimento"
+      }
+    ]
+  }
+];
+
+// Ucrânia — guerra e deslocamento (UNAIDS, OMS, UNHCR)
+const UA_CONTENT: HelpCard[] = [
+  {
+    id: "testing",
+    title: "Testagem e Informação (Ucrânia)",
+    description: "Serviços de testagem e informação sobre HIV mantidos com apoio de UNAIDS, OMS e parceiros durante o conflito.",
+    links: [
+      {
+        label: "UNAIDS – Ucrânia (país)",
+        url: "https://www.unaids.org/en/regionscountries/countries/ukraine",
+        authority: "UNAIDS",
+        note: "Resposta à crise e programas"
+      },
+      {
+        label: "UNAIDS – Guerra na Ucrânia (especial)",
+        url: "https://unaids.org/en/War-Ukraine-special",
+        authority: "UNAIDS",
+        note: "Acesso a tratamento e apoio em contexto de guerra"
+      }
+    ]
+  },
+  {
+    id: "treatment",
+    title: "Acesso a Tratamento (ART) na Ucrânia",
+    description: "UNAIDS, OMS, Global Fund e parceiros trabalham para manter fornecimento de ARV e cuidados. Pessoas em deslocamento podem ter apoio via UNHCR e redes de acolhimento.",
+    links: [
+      {
+        label: "UNAIDS – Resposta à crise na Ucrânia",
+        url: "https://unaids.org/en/War-Ukraine-special",
+        authority: "UNAIDS",
+        note: "Medicamentos e continuidade do tratamento"
+      },
+      {
+        label: "OMS – Ucrânia",
+        url: "https://www.who.int/countries/ukr/",
+        authority: "WHO",
+        note: "Saúde em emergência e medicamentos essenciais"
+      },
+      {
+        label: "UNHCR – Refugiados e saúde",
+        url: "https://www.unhcr.org/health.html",
+        authority: "UNHCR",
+        note: "Para deslocados – acesso a saúde"
+      }
+    ],
+    eligibility_notes: [
+      "Tratamento mantido na maior parte do país com apoio internacional",
+      "Deslocados: procurar pontos UNHCR ou centros de saúde indicados"
+    ]
+  },
+  {
+    id: "support",
+    title: "Suporte e Refugiados",
+    description: "Para pessoas que deixaram a Ucrânia, UNHCR e parceiros nos países de acolhimento podem ajudar com saúde e medicamentos.",
+    links: [
+      {
+        label: "UNHCR – Saúde",
+        url: "https://www.unhcr.org/health.html",
+        authority: "UNHCR",
+        note: "Acesso a cuidados em contexto de refúgio"
+      }
+    ]
+  }
+];
+
+// Venezuela — crise humanitária (PAHO, UNAIDS)
+const VE_CONTENT: HelpCard[] = [
+  {
+    id: "testing",
+    title: "Testagem e Informação (Venezuela)",
+    description: "Informações sobre HIV e testagem na Venezuela, com apoio da OPAS e UNAIDS em contexto de crise.",
+    links: [
+      {
+        label: "UNAIDS – Venezuela",
+        url: "https://www.unaids.org/en/regionscountries/countries/venezuela",
+        authority: "UNAIDS",
+        note: "Dados e resposta no país"
+      },
+      {
+        label: "OPAS – HIV",
+        url: "https://www.paho.org/en/health-topics/hiv",
+        authority: "PAHO",
+        note: "Informação regional e programas"
+      }
+    ]
+  },
+  {
+    id: "treatment",
+    title: "Acesso a Medicamentos (ART)",
+    description: "OPAS, UNAIDS e Global Fund apoiam distribuição de antirretrovirais na Venezuela. Centros estatais e parceiros dispõem medicamentos quando há estoque.",
+    links: [
+      {
+        label: "OPAS – Parceria e medicamentos HIV (Venezuela)",
+        url: "https://www.paho.org/en/news/21-7-2020-hiv-medication-maintained-through-paho-partnership",
+        authority: "PAHO",
+        note: "Manutenção de medicamentos em crise"
+      },
+      {
+        label: "UNAIDS – Ação contra desabastecimento (Venezuela)",
+        url: "https://unaids.org/en/resources/presscentre/featurestories/2019/february/20190214_Venezuela_HIV_treatment",
+        authority: "UNAIDS",
+        note: "Distribuição e doação de ARV"
+      },
+      {
+        label: "OMS – Diretrizes de tratamento",
+        url: "https://www.who.int/health-topics/hiv-aids",
+        authority: "WHO",
+        note: "Diretrizes globais de ART"
+      }
+    ],
+    eligibility_notes: [
+      "Acesso via centros do Ministério da Saúde e parceiros apoiados por OPAS/UNAIDS",
+      "Multimonth dispensing pode estar disponível para reduzir deslocamentos"
+    ]
+  },
+  {
+    id: "support",
+    title: "Suporte e Redes",
+    description: "Organizações da sociedade civil e agências internacionais ajudam a localizar centros com medicamentos.",
+    links: [
+      {
+        label: "OPAS – Cooperação Venezuela",
+        url: "https://www.paho.org/en/countries/venezuela",
+        authority: "PAHO",
+        note: "Programas de saúde no país"
+      }
+    ]
+  }
+];
+
+const GLOBAL_FALLBACK: HelpCard[] = [
+  {
+    id: "testing",
+    title: "Global HIV Testing",
+    description: "WHO and UNAIDS provide testing information and country-level data.",
+    links: [
+      {
+        label: "UNAIDS – Country data and programs",
+        url: "https://www.unaids.org/en/regionscountries",
+        authority: "UNAIDS",
+        note: "Find your country"
+      },
+      {
+        label: "WHO – HIV/AIDS",
+        url: "https://www.who.int/health-topics/hiv-aids",
+        authority: "WHO",
+        note: "Global guidelines"
+      }
+    ]
+  },
+  {
+    id: "treatment",
+    title: "Treatment Information (ART)",
+    description: "International guidelines on Antiretroviral Therapy and access in humanitarian settings.",
     links: [
       {
         label: "WHO HIV Treatment Guidelines",
         url: "https://www.who.int/health-topics/hiv-aids",
-        authority: "WHO"
+        authority: "WHO",
+        note: "Evidence-based ART guidelines"
+      },
+      {
+        label: "UNAIDS – Treatment access",
+        url: "https://www.unaids.org/en",
+        authority: "UNAIDS",
+        note: "Global and country-level info"
       }
     ]
   }
@@ -244,7 +611,12 @@ const GLOBAL_FALLBACK: HelpCard[] = [
 
 const CONTENT_REGISTRY: HelpContentMap = {
   "US-CA": US_CA_CONTENT,
+  "US-FL": US_FL_CONTENT,
   "BR": BR_CONTENT,
+  "IR": IR_CONTENT,
+  "PS": PS_CONTENT,
+  "UA": UA_CONTENT,
+  "VE": VE_CONTENT,
   "GLOBAL": GLOBAL_FALLBACK
 };
 
