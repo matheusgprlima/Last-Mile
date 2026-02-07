@@ -107,6 +107,8 @@ export interface DiscoveryResponse {
 export interface AgentHandoff {
   topic: string;
   referToAgentName: string;
+  /** Explicit keywords/phrases that force handoff (model checks these first). */
+  triggerKeywords?: string[];
 }
 
 export interface AgentPersona {

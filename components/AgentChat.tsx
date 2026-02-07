@@ -47,35 +47,39 @@ const AgentChat: React.FC<AgentChatProps> = ({ agent, onBack }) => {
   }, [messages, isTyping]);
 
   const getSystemInstruction = () => {
+    const handoffLines = agent.handoffTopics.map((h) => {
+      const triggers = h.triggerKeywords?.length
+        ? ` Keywords that mean handoff: ${h.triggerKeywords.join(", ")}.`
+        : "";
+      return `- ${h.topic} → ${h.referToAgentName}.${triggers}`;
+    });
+
     const handoffBlock =
       agent.handoffTopics.length > 0
         ? `
-SCOPE BOUNDARY — HANDOFF (mandatory):
-You must NOT answer or extend into another agent's expertise. Your scope is strictly: ${agent.inScope}
+STEP 1 — MANDATORY BEFORE EVERY REPLY (stop criterion):
+Read the user's last message and the conversation. If the user is asking about or the conversation is mainly about any of the following, you MUST NOT answer with substantive content. You MUST reply only with a handoff. No locations, no medical advice, no steps from you.
 
-If the user's need is mainly about any of the following, do NOT give substantive guidance. Reply with a brief acknowledgment, then exactly: "This is better handled by [Agent Name]. Continue the conversation there." and one short reason. Then stop.
-${agent.handoffTopics.map((h) => `- ${h.topic} → refer to ${h.referToAgentName}`).join("\n")}
+${handoffLines.join("\n")}
 
-Before answering, check: could this question be better answered by Locator, Access, Shield, or Compass? If it belongs to another agent, do the handoff and do not answer the substance. Do not suggest treatment if you are Locator; do not suggest testing sites if you are Access; do not explain ART if you are Shield; do not give medical next steps if you are Compass.`
+If any of these topics or keywords appear (e.g. user wants "medication" after "exposure", or "PEP", or "72 hours"), your entire response must be: a single sentence acknowledging them, then "This is better handled by [Agent Name]. Continue the conversation there." and one short reason. Do not add addresses, hospital names, or clinical guidance.
+Example: User says "I want to take medication what to do" then "yes" (exposure within 72h). That is PEP → Shield. You must NOT explain PEP or give a hospital address. You must say this is handled by Shield and they should continue the conversation there.
+
+STEP 2 — Only if STEP 1 does not apply:
+Your scope is strictly: ${agent.inScope}
+Answer in one clear next step. Do not extend into another agent's domain.`
         : "";
 
-    return `You are a functional AI agent in an HIV/AIDS discovery platform.
-Your ID is: ${agent.id}
-Your Name is: ${agent.name}
-Your Role is: ${agent.role}
+    return `You are ${agent.name}, a single-purpose agent in an HIV/AIDS platform. Your role: ${agent.role}.
 
-STRICT SCOPE (stop criterion):
-You may only address: ${agent.inScope}
-Do not extend your answer beyond this. If you are about to suggest something that belongs to another agent, do not suggest it — refer the user to that agent instead.
+CRITICAL — ONE SCOPE ONLY:
+You only handle: ${agent.inScope}
+Anything else belongs to another agent. You refer; you do not answer.
 ${handoffBlock}
 
-STYLE:
-- Calm, short responses. No emojis. No motivational language.
-- No medical diagnosis. No legal claims.
-- One clarifying question if input is vague; one action if user is overwhelmed.
+STYLE: Calm, short. No emojis. No diagnosis. No legal claims. One step or one clarifying question.
 
-RESPONSE RULE:
-Always end with a single, clear next step phrased conversationally — and only if that step is within your scope. Otherwise, hand off.`;
+If you are about to give a hospital name, medication name, PEP/PrEP explanation, or treatment path and that is not in your scope above, do not give it. Say which agent handles it and stop.`;
   };
 
   const getInitialMessage = () => {
