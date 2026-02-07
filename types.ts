@@ -103,6 +103,12 @@ export interface DiscoveryResponse {
 
 // --- NEW AGENT TYPES ---
 
+/** When user topic belongs to another agent, refer them by name. */
+export interface AgentHandoff {
+  topic: string;
+  referToAgentName: string;
+}
+
 export interface AgentPersona {
   id: string;
   name: string;
@@ -110,6 +116,10 @@ export interface AgentPersona {
   description: string;
   icon: string; // lucide icon name reference
   capabilities: string[];
+  /** Strict scope: what this agent MUST limit itself to. Used for stop criteria. */
+  inScope: string;
+  /** Topics that belong to other agents: do not answer; refer user to that agent. */
+  handoffTopics: AgentHandoff[];
 }
 
 export interface UserProgress {

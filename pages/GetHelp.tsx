@@ -46,7 +46,7 @@ const GetHelp: React.FC = () => {
            <div>
               <h4 className="text-blue-400 text-sm font-semibold mb-2">What if my location isn't listed?</h4>
               <p className="text-xs text-slate-500">
-                We have resources for United States (California, Florida), Brazil, Iran, Gaza/Palestine, Ukraine, and Venezuela. Select "Other (Global)" for WHO and UNAIDS guidelines.
+                We have resources for all US states, Brazil, Iran, Gaza/Palestine, Ukraine, and Venezuela. Select "Other (Global)" for WHO and UNAIDS guidelines.
               </p>
            </div>
         </div>

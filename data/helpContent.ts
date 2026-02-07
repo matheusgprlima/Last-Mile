@@ -320,6 +320,120 @@ const US_FL_CONTENT: HelpCard[] = [
   }
 ];
 
+// United States — national resources (all states except CA/FL which have state-specific content above)
+const US_GENERIC_CONTENT: HelpCard[] = [
+  {
+    id: "testing",
+    title: "HIV Testing Services",
+    description: "Find free, confidential testing locations nationwide.",
+    links: [
+      {
+        label: "Find Testing Sites (CDC)",
+        url: "https://gettested.cdc.gov/",
+        authority: "CDC",
+        note: "Search by zip code"
+      },
+      {
+        label: "Find HIV Care (Ryan White)",
+        url: "https://findhivcare.hrsa.gov/",
+        authority: "HRSA",
+        note: "HIV care providers by location"
+      }
+    ],
+    what_you_need: ["No ID required for most anonymous sites", "Walk-ins often accepted"]
+  },
+  {
+    id: "treatment",
+    title: "Treatment & ADAP",
+    description: "Every state has an AIDS Drug Assistance Program (ADAP). Find care and medication assistance near you.",
+    links: [
+      {
+        label: "Find HIV Care (HRSA)",
+        url: "https://findhivcare.hrsa.gov/",
+        authority: "HRSA",
+        note: "Ryan White providers – includes ADAP info"
+      },
+      {
+        label: "Find a Health Center (HRSA)",
+        url: "https://findahealthcenter.hrsa.gov/",
+        authority: "HRSA",
+        note: "Low-cost / sliding scale care"
+      },
+      {
+        label: "NASTAD – State ADAP contacts",
+        url: "https://www.nastad.org/prevention/ryan-white-hivaids-program/part-b-adap",
+        authority: "NGO_Legal",
+        note: "State-by-state ADAP information"
+      }
+    ],
+    eligibility_notes: [
+      "Must be a resident of the state",
+      "Income and insurance rules vary by state",
+      "ADAP covers prescriptions for eligible people living with HIV"
+    ],
+    what_you_need: ["Proof of residency", "Proof of income", "HIV diagnosis"]
+  },
+  {
+    id: "prep_pep",
+    title: "PrEP & PEP",
+    description: "Find PrEP and PEP providers in your area.",
+    links: [
+      {
+        label: "National PrEP Locator",
+        url: "https://preplocator.org/",
+        authority: "NGO_Legal",
+        note: "Find providers near you"
+      },
+      {
+        label: "CDC – PrEP & PEP basics",
+        url: "https://www.cdc.gov/hiv/basics/prep.html",
+        authority: "CDC",
+        note: "Information and resources"
+      }
+    ],
+    eligibility_notes: [
+      "PrEP is for ongoing prevention",
+      "PEP must be started within 72 hours of exposure"
+    ]
+  },
+  {
+    id: "immigrant_legal",
+    title: "Immigrant & Legal Support",
+    description: "Legal protections and health access for immigrants living with HIV.",
+    links: [
+      {
+        label: "Immigration Equality",
+        url: "https://immigrationequality.org/",
+        authority: "NGO_Legal",
+        note: "National legal resource"
+      },
+      {
+        label: "Find HIV Care (HRSA)",
+        url: "https://findhivcare.hrsa.gov/",
+        authority: "HRSA",
+        note: "Ryan White providers – often serve regardless of status"
+      }
+    ],
+    eligibility_notes: [
+      "Many ADAP and Ryan White programs do not require U.S. citizenship",
+      "Accessing health services is generally safe under public charge rules"
+    ]
+  },
+  {
+    id: "support",
+    title: "Support & Care",
+    description: "Ryan White and care coordination nationwide.",
+    links: [
+      {
+        label: "Ryan White HIV/AIDS Program",
+        url: "https://ryanwhite.hrsa.gov/hiv-care",
+        authority: "HRSA",
+        note: "Federal program for low-income support"
+      }
+    ]
+  }
+];
+
 // Iran — access in complex context (UNAIDS/WHO)
 const IR_CONTENT: HelpCard[] = [
   {
@@ -612,6 +726,7 @@ const GLOBAL_FALLBACK: HelpCard[] = [
 const CONTENT_REGISTRY: HelpContentMap = {
   "US-CA": US_CA_CONTENT,
   "US-FL": US_FL_CONTENT,
+  "US": US_GENERIC_CONTENT,
   "BR": BR_CONTENT,
   "IR": IR_CONTENT,
   "PS": PS_CONTENT,
@@ -626,11 +741,15 @@ export const getHelpCardsForLocation = (
   location: LocationKey, 
   showImmigrantHelp: boolean
 ): HelpCard[] => {
-  // If region exists, use country-region format. Otherwise just country.
-  const key = location.region && location.country === "US" 
-    ? `${location.country}-${location.region}` 
-    : location.country;
-    
+  // US: use state-specific content for CA/FL, otherwise national (US) content.
+  let key: string;
+  if (location.country === "US" && location.region) {
+    key = (location.region === "CA" || location.region === "FL")
+      ? `US-${location.region}`
+      : "US";
+  } else {
+    key = location.country;
+  }
   const content = CONTENT_REGISTRY[key] || CONTENT_REGISTRY["GLOBAL"];
 
   return content.filter(card => {
