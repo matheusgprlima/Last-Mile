@@ -6,7 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import cron from 'node-cron';
 import { fetchLatestDiscoveries } from './services/discoveryMonitor';
-import { analyzeEvidence } from './services/geminiService';
+import { analyzeEvidence, regenerateHelpLinks } from './services/geminiService';
 import { hashText } from './utils/analysisCache';
 import type { AnalysisResponse } from './types';
 
@@ -41,6 +41,35 @@ app.post('/api/analyze', async (req, res) => {
   } catch (err) {
     console.error('[POST /api/analyze]', err);
     res.status(500).json({ error: 'Analysis failed. Please try again.' });
+  }
+});
+
+function parseRegenerateBody(body: unknown): { cardId: string; title: string; description: string; locationLabel: string; currentLinkLabels?: string[] } | null {
+  if (!body || typeof body !== 'object') return null;
+  const b = body as Record<string, unknown>;
+  const cardId = typeof b.cardId === 'string' ? b.cardId : '';
+  const title = typeof b.title === 'string' ? b.title : '';
+  const description = typeof b.description === 'string' ? b.description : '';
+  const locationLabel = typeof b.locationLabel === 'string' ? b.locationLabel : '';
+  if (!cardId || !title || !description || !locationLabel) return null;
+  const currentLinkLabels = Array.isArray(b.currentLinkLabels)
+    ? (b.currentLinkLabels as string[]).filter((x) => typeof x === 'string')
+    : undefined;
+  return { cardId, title, description, locationLabel, currentLinkLabels };
+}
+
+app.post('/api/help/regenerate-links', async (req, res) => {
+  try {
+    const input = parseRegenerateBody(req.body);
+    if (!input) {
+      res.status(400).json({ error: 'Missing or invalid body. Required: cardId, title, description, locationLabel.' });
+      return;
+    }
+    const data = await regenerateHelpLinks(input);
+    res.json(data);
+  } catch (err) {
+    console.error('[POST /api/help/regenerate-links]', err);
+    res.status(500).json({ error: 'Failed to regenerate links. Please try again.' });
   }
 });
 

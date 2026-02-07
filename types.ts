@@ -117,3 +117,15 @@ export interface UserProgress {
   completedHelpSteps: string[];
   lastActive: number;
 }
+
+// Get Help — regenerate links (Gemini)
+export interface HelpLinkRegenerateItem {
+  label: string;
+  url: string;
+  authority: string;
+  note?: string | null;
+}
+
+export interface RegenerateHelpLinksResponse {
+  links: HelpLinkRegenerateItem[];
+}

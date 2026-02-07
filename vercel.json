@@ -11,6 +11,9 @@
     },
     "api/analyze.ts": {
       "maxDuration": 60
+    },
+    "api/help/regenerate-links.ts": {
+      "maxDuration": 30
     }
   },
   "rewrites": [

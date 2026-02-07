@@ -1,16 +1,65 @@
-import React, { useState, useMemo } from 'react';
-import { getHelpCardsForLocation, LocationKey, HelpCard } from '../data/helpContent';
-import { MapPin, ExternalLink, ShieldCheck, CheckCircle2, AlertCircle, ChevronDown, Globe, Ban } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { getHelpCardsForLocation, LocationKey, HelpCard, type HelpLink } from '../data/helpContent';
+import { MapPin, ExternalLink, ShieldCheck, CheckCircle2, AlertCircle, ChevronDown, Globe, Ban, RefreshCw } from 'lucide-react';
 import { isValidHttpsUrl } from '../utils/evidenceLink';
+
+const LOCATION_LABELS: Record<string, string> = {
+  "US-CA": "California, United States",
+  "US-FL": "Florida, United States",
+  "BR": "Brazil",
+  "IR": "Iran",
+  "PS": "Gaza / Palestine",
+  "UA": "Ukraine",
+  "VE": "Venezuela",
+  "GLOBAL": "Global",
+};
+
+function getLocationLabel(country: string, region: string): string {
+  const key = country === "US" ? `US-${region}` : country;
+  return LOCATION_LABELS[key] ?? (country === "US" ? `${region}, United States` : country);
+}
 
 const GetHelpSection: React.FC = () => {
   const [country, setCountry] = useState<string>("US");
   const [region, setRegion] = useState<string>("CA"); // Default to California
   const [immigrantToggle, setImmigrantToggle] = useState<boolean>(false);
+  const [linkOverrides, setLinkOverrides] = useState<Record<string, HelpLink[]>>({});
+  const [regeneratingCardId, setRegeneratingCardId] = useState<string | null>(null);
 
   const cards = useMemo(() => {
     return getHelpCardsForLocation({ country, region }, immigrantToggle);
   }, [country, region, immigrantToggle]);
+
+  const locationLabel = useMemo(() => getLocationLabel(country, region), [country, region]);
+
+  const handleRegenerateLinks = useCallback(async (card: HelpCard) => {
+    setRegeneratingCardId(card.id);
+    try {
+      const res = await fetch('/api/help/regenerate-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cardId: card.id,
+          title: card.title,
+          description: card.description,
+          locationLabel,
+          currentLinkLabels: card.links.map((l) => l.label),
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error ?? 'Failed to regenerate links');
+      }
+      const data = await res.json();
+      const links = Array.isArray(data?.links) ? data.links : [];
+      setLinkOverrides((prev) => ({ ...prev, [card.id]: links as HelpLink[] }));
+    } catch (e) {
+      console.error('Regenerate help links:', e);
+      alert(e instanceof Error ? e.message : 'Failed to regenerate links. Please try again.');
+    } finally {
+      setRegeneratingCardId(null);
+    }
+  }, [locationLabel]);
 
   // Locations with dedicated content (US-CA, US-FL, BR, IR, PS, UA, VE)
   const hasOfficialConfig = ["US-CA", "US-FL", "BR", "IR", "PS", "UA", "VE"].includes(
@@ -105,14 +154,27 @@ const GetHelpSection: React.FC = () => {
         )}
 
         {cards.map((card) => (
-          <HelpCardComponent key={card.id} card={card} />
+          <HelpCardComponent
+            key={card.id}
+            card={card}
+            linksOverride={linkOverrides[card.id]}
+            regenerating={regeneratingCardId === card.id}
+            onRegenerateLinks={() => handleRegenerateLinks(card)}
+          />
         ))}
       </div>
     </section>
   );
 };
 
-const HelpCardComponent: React.FC<{ card: HelpCard }> = ({ card }) => {
+const HelpCardComponent: React.FC<{
+  card: HelpCard;
+  linksOverride?: HelpLink[];
+  regenerating: boolean;
+  onRegenerateLinks: () => void;
+}> = ({ card, linksOverride, regenerating, onRegenerateLinks }) => {
+  const links = linksOverride ?? card.links;
+
   return (
     <div className="glass-card p-5 rounded-xl border border-slate-800 hover:border-blue-500/30 transition-all group">
       <div className="flex justify-between items-start mb-3">
@@ -131,8 +193,8 @@ const HelpCardComponent: React.FC<{ card: HelpCard }> = ({ card }) => {
       </p>
 
       {/* Links */}
-      <div className="space-y-2 mb-5">
-        {card.links.map((link, idx) => {
+      <div className="space-y-2 mb-4">
+        {links.map((link, idx) => {
           const isValid = isValidHttpsUrl(link.url);
           if (isValid) {
             return (
@@ -181,6 +243,28 @@ const HelpCardComponent: React.FC<{ card: HelpCard }> = ({ card }) => {
             );
           }
         })}
+      </div>
+
+      {/* Regenerate links button */}
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={onRegenerateLinks}
+          disabled={regenerating}
+          className="flex items-center gap-2 w-full justify-center py-2.5 px-3 rounded-lg border border-slate-700 bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 hover:border-slate-600 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {regenerating ? (
+            <>
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              Regenerating…
+            </>
+          ) : (
+            <>
+              <RefreshCw className="w-3.5 h-3.5" />
+              In case of bad links click here to regenerate them
+            </>
+          )}
+        </button>
       </div>
 
       {/* Metadata Footer (Eligibility / Checklist) */}
