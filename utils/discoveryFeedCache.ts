@@ -1,6 +1,6 @@
 import type { DiscoveryCard } from '../types';
 
-export const FEED_CACHE_KEY = 'last_mile_feed_cache';
+const FEED_CACHE_KEY = 'last_mile_feed_cache';
 const LAST_FEED_FETCH_KEY = 'last_mile_feed_fetch_at';
 const FEED_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
 

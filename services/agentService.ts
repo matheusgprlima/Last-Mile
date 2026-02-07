@@ -58,7 +58,3 @@ export const AGENTS: AgentPersona[] = [
     ],
   },
 ];
-
-export const getAgentById = (id: string): AgentPersona | undefined => {
-  return AGENTS.find(a => a.id === id);
-};

@@ -124,12 +124,6 @@ export interface AgentPersona {
   handoffTopics: AgentHandoff[];
 }
 
-export interface UserProgress {
-  viewedMilestones: string[];
-  completedHelpSteps: string[];
-  lastActive: number;
-}
-
 // Get Help — regenerate links (Gemini)
 export interface HelpLinkRegenerateItem {
   label: string;

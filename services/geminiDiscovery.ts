@@ -3,8 +3,8 @@
  * Used by discoveryMonitor (API / server). Batch + concurrency for performance.
  */
 import { GoogleGenAI } from '@google/genai';
-import { DISCOVERY_FORMAT_INSTRUCTION, DISCOVERY_FORMAT_BATCH_INSTRUCTION } from '../prompts.js';
-import type { DiscoveryCard, DiscoveryResponse } from '../types.js';
+import { DISCOVERY_FORMAT_BATCH_INSTRUCTION } from '../prompts.js';
+import type { DiscoveryCard } from '../types.js';
 import { createLogger } from '../api/utils/logger.js';
 
 const log = createLogger('geminiDiscovery');
@@ -30,16 +30,6 @@ export type RawNewsItem = {
   date?: string;
 };
 
-function buildPrompt(raw: RawNewsItem): string {
-  return `Format this news item into one Discovery Card. Provide source_labels (short alias for the link).
-
-Title: ${raw.title}
-Summary: ${raw.summary}
-URL: ${raw.link}
-Source: ${raw.sourceName}
-Date: ${raw.date || 'Recent'}`;
-}
-
 const SUMMARY_MAX = 280;
 
 function buildBatchPrompt(items: RawNewsItem[]): string {
@@ -54,42 +44,6 @@ Source: ${raw.sourceName}
 Date: ${raw.date || 'Recent'}`
     )
     .join('\n\n');
-}
-
-export async function formatNewsItem(raw: RawNewsItem): Promise<DiscoveryCard | null> {
-  const ai = client();
-  if (!ai) return null;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: buildPrompt(raw),
-      config: {
-        systemInstruction: DISCOVERY_FORMAT_INSTRUCTION,
-        responseMimeType: 'application/json',
-      },
-    });
-
-    const text = response.text;
-    if (!text) return null;
-
-    const parsed = JSON.parse(text) as DiscoveryResponse;
-    if (parsed.rejected_items?.length && !parsed.discovery_cards?.length) {
-      log.info('Item rejected', { reason: parsed.rejected_items[0]?.reason ?? 'unknown' });
-      return null;
-    }
-    const card = parsed.discovery_cards?.[0] ?? null;
-    if (!card) return null;
-    log.info('Card accepted', { title: card.title?.slice(0, 50) });
-
-    if (card.sources?.length && (!card.source_labels || card.source_labels.length !== card.sources.length)) {
-      card.source_labels = card.sources.map(() => raw.sourceName);
-    }
-    return card;
-  } catch (err) {
-    log.warn('formatNewsItem failed', { reason: err instanceof Error ? err.message : String(err) });
-    return null;
-  }
 }
 
 /** Batch: one Gemini call for multiple items. Returns one result per input (card or null), same order. */
